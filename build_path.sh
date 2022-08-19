@@ -1,0 +1,12 @@
+export HOME=/home/alexia/ffmpeg
+export ANDROID_NDK=$HOME/android-ndk-r21e
+export ANDROID_ABI=arm64-v8a
+export ANDROID_API=android-21
+export ANDROID_ARCH=arch-arm64
+export ANDROID_EABI=aarch64-linux-android-4.9
+export HOST=aarch64-linux-android
+export CROSS_COMPILE=aarch64-linux-android-
+export PREFIX=$(pwd)/x264_android/$ANDROID_ABI
+export SYSROOT=$ANDROID_NDK/platforms/$ANDROID_API/$ANDROID_ARCH
+export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/$HOST
+export CROSS_PREFIX=$TOOLCHAIN/$CROSS_COMPILE
