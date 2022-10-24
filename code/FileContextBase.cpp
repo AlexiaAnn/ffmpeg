@@ -118,6 +118,11 @@ void FileContextBase::GetInformation()
 FileContextBase::FileContextBase(const char *srcFilePath) : inFmtCtx(GetFormatContextByFileName(srcFilePath)), dePacket(AllocAVPacket()),
                                                             deAudioPacketNumber(0), deVideoPacketNumber(0)
 {
+    if (inFmtCtx == nullptr) {
+        av_log_error("avformatcontext is nullptr,FileContextBase initialize failed\n");
+        ret = -1;
+        return;
+    }
     FindStreamInformation();
     av_log_info("file context base init over\n");
     if (ret >= 0) {

@@ -52,7 +52,7 @@ bool RecordMp4::WriteAudioToFile(void* data, int length)
 	deAudioFrame->data[0] = (uint8_t*)data;
 	deAudioFrame->data[1] = (uint8_t*)((float*)data + length);
 	deAudioFrame->nb_samples = length;
-	swrCont->ResampleAudioFrame(deAudioFrame,enAudioCont->GetEncodecFrame());
+	swrCont->ResampleAudioFrame(deAudioFrame,*enAudioCont);
 	return enAudioCont->EncodeAudioFrame(outfmtCont->GetFormatContext(),videoStream);
 	
 }

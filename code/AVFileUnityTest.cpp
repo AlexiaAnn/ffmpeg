@@ -64,7 +64,7 @@ void AVFileUnityTest::Test(const char *srcFilePath, const char *dstFilePath)
     AudioFileContext::VariableCheck(srcFilePath);
     AVStream *audioStream = inFmtCtx->streams[getAudioStreamIndex()];
     AVStream *videoStream = inFmtCtx->streams[getVideoStreamIndex()];
-    avContext = new AVContext(dstFilePath, audioStream->codecpar->sample_rate, (AVSampleFormat)audioStream->codecpar->format, audioStream->codecpar->ch_layout, (AVPixelFormat)videoStream->codecpar->format, videoStream->r_frame_rate.num, videoStream->codecpar->width, videoStream->codecpar->height);
+    avContext = new AVContext(dstFilePath, audioStream->codecpar->sample_rate, (AVSampleFormat)audioStream->codecpar->format, audioStream->codecpar->ch_layout, (AVPixelFormat)videoStream->codecpar->format, videoStream->r_frame_rate.num, 0.2f,videoStream->codecpar->width, videoStream->codecpar->height);
     avContext->WriteAVPreparition(dstFilePath);
     isOtherStream = true;
     DecodePakcet();

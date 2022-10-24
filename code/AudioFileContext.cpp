@@ -18,7 +18,7 @@ void AudioFileContext::DealAudioPacket()
             av_log_error("Error during decoding");
             return;
         }
-        //av_log_info("receive a deaudio frame\n");
+        av_log_info("receive a deaudio frame\n");
         DealDeAudioFrame();
         av_frame_unref(deAudioFrame);
         if (AudioContext::ret < 0)

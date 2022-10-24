@@ -12,10 +12,10 @@ public:
     AVContext();
     AVContext(const char *dstFilePath,
               int sampleRate, AVSampleFormat sampleFormat, AVChannelLayout chLayout,
-              AVPixelFormat dePixFormat, int fps, int width, int height);
+              AVPixelFormat dePixFormat, int fps, float bitRatePercent,int width, int height);
     AVContext(const char *dstFilePath,
               int sampleRate, AVSampleFormat sampleFormat, AVChannelLayout chLayout,
-              AVPixelFormat dePixFormat, int fps, int deWidth, int deHeight, int enWidth, int enHeight);
+              AVPixelFormat dePixFormat, int fps, float bitRatePercent,int deWidth, int deHeight, int enWidth, int enHeight);
     void WriteAVPreparition(const char *dstFilePath);
     void WriteAVTailer();
     int GetRet() const;

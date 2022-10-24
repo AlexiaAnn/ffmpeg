@@ -73,7 +73,7 @@ void SeekComponent::GetFrameDataByPercent(float percent, void* data,int length)
 AVFrame* SeekComponent::SeekFrameByPercent(float percent)
 {
     int targetFrameIndex = int(percent * frameNumber);
-    if (targetFrameIndex <= 0) return nullptr;
+    if (targetFrameIndex <0) return nullptr;
     if (targetFrameIndex == curFrameIndex) return enVideoFrame;
     if (targetFrameIndex - curFrameIndex > 0 && targetFrameIndex - curFrameIndex < videoStream->r_frame_rate.num) {
         while (targetFrameIndex != curFrameIndex) {

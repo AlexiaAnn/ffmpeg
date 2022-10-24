@@ -23,16 +23,16 @@ AVCodecContext* EnCodecVideoContext::OpenEncodecContext(AVCodecID enCodecid,int 
     context->framerate.den = 1;
     context->time_base.num = 1;
     context->time_base.den = fps;
-    /*context->thread_count = 4;
-    context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;*/
-    /*int64_t crf =  (1- bitRatePercent)* DEFAULTCRFMAXVALUE;
+    context->thread_count = 4;
+    context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    int64_t crf =  (1- bitRatePercent)* DEFAULTCRFMAXVALUE;
     if (crf<0 || crf>DEFAULTCRFMAXVALUE) crf = 18;
-    av_opt_set_int(context->priv_data, "crf", crf, 0);*/
+    av_opt_set_int(context->priv_data, "crf", crf, 0);
     //av_opt_set_int(context->priv_data, "qp", 18, 0);
-    //av_opt_set(context->priv_data, "preset", "veryslow", 0);
+    av_opt_set(context->priv_data, "preset", "slow", 0);
     const AVCodec* codec = avcodec_find_encoder(enCodecid);
     av_log_info("is opening video codec context\n");
-    //av_log_info("bit rate percent from unity:%f,target crf:%ld\n", bitRatePercent, crf);
+    av_log_info("bit rate percent from unity:%f,target crf:%ld\n", bitRatePercent, crf);
     av_log_info("context bitrate:%ld\n", context->bit_rate);
     ret = avcodec_open2(context, codec, nullptr);
     if (ret < 0)
@@ -73,16 +73,19 @@ EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int heigh
         av_log_error("error when open encodec context,video codeccontext initialize failed\n");
         goto end;
     }
+    av_log_info("encodec context open success\n");
     frame = CreateVideoFrame(codecCont);
     if (frame == nullptr) {
         av_log_error("error when allocing frame,video codeccontext initialize failed\n");
         goto end;
     }
+    av_log_info("video frame create success\n");
     packet = AllocAVPacket();
     if (packet == nullptr) {
         av_log_error("error when allocing packet,video codeccontext initialize failed\n");
         goto end;
     }
+    av_log_info("packet alloc success\n");
     return;
 end:
     ret = -1;

@@ -1,7 +1,7 @@
 #pragma once
 #define __STDC_CONSTANT_MACROS
-//#define CmdLog
-#define UnityLog
+#define CmdLog
+//#define UnityLog
 extern "C"
 {
 #include <libavformat/avformat.h>
@@ -21,6 +21,7 @@ extern "C"
 }
 #include <exception>
 #include <thread>
+#include <iostream>
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #ifdef CmdLog
@@ -35,6 +36,7 @@ extern "C"
 #endif // UnityLog
 void UnityLogCallbackFunc(void *, int, const char *, va_list);
 void LogCallbackTotxt(void *, int, const char *, va_list);
+void WindowsCallbackFunc(void*, int, const char*, va_list);
 class Debug
 {
 public:

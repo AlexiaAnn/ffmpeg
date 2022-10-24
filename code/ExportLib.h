@@ -7,6 +7,7 @@
 #include "AudioWave.h"
 #include "SeekComponent.h"
 #include "RecordGif.h"
+#include "ExtractAudioFromMp4.h"
 #include <thread>
 #define Export(type)  extern "C" __declspec(dllexport) type __stdcall
 #define ID_CHECK_RETUREZERO if (id < 0) {av_log_info("c++ dll id is incorrect,dll can`t find target context point\n");return 0;}
@@ -30,9 +31,9 @@ Export(void) InitCSharpDelegate(void (*Log)(char* message, int iSize), void (*Lo
 Export(bool) RecordMP4Start(const char* dstFilePath, int width, int height, int fps);
 Export(void) WriteMP4Frame(void* dataPtr, int length);
 Export(void) RecordMP4End();
-Export(bool) RecordAVStartWithLogToUnity(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps);
-Export(bool) RecordAVStartWithLogToTxt(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps);
-Export(bool) RecordAVStart(const char* dstFilePath,int sampleRate,int channelCount, int width, int height, int fps);
+Export(bool) RecordAVStartWithLogToUnity(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps,float bitRatePercent);
+Export(bool) RecordAVStartWithLogToTxt(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps, float bitRatePercent);
+Export(bool) RecordAVStart(const char* dstFilePath,int sampleRate,int channelCount, int width, int height, int fps, float bitRatePercent);
 Export(void) WriteVideoFrame(void* dataPtr);
 Export(void) WriteAudioFrame(void* dataPtr,int length);
 Export(void) FlushVideoBuffer();

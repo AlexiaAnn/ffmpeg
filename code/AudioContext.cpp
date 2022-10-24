@@ -21,7 +21,7 @@ void AudioContext::ResampleDeAudioFrame()
     ret = swr_convert(swrCtx, enAudioFrame->data, dstNbSamples,
                       const_cast<const uint8_t **>(deAudioFrame->data), deAudioFrame->nb_samples);
     enAudioFrame->nb_samples = ret; // error prone
-    //av_log_info("resample success,EnAudio Frame sample number:%d", ret);
+    av_log_info("resample success,EnAudio Frame sample number:%d", ret);
     if (ret < 0)
     {
         av_log_error("resample is failed\n");
@@ -36,14 +36,23 @@ void AudioContext::EncodeAudioFrame()
         pts += enAudioFrame->nb_samples;
     }
     ret = avcodec_send_frame(enAudioCodecCtx, enAudioFrame);
+    if (ret < 0) {
+        char str[AV_ERROR_MAX_STRING_SIZE];
+        av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE,ret);
+        av_log_error("send frame into en audio codec context failed,%s\n",str);
+        return;
+    }
     while (ret >= 0)
     {
         ret = avcodec_receive_packet(enAudioCodecCtx, enAudioPacket);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            av_log_info("has not enough frame data\n");
             return;
+        }
+            
         else if (ret < 0)
         {
-            av_log_error("Error encoding audio frame");
+            av_log_error("Error encoding audio frame\n");
             return;
         }
         av_packet_rescale_ts(enAudioPacket, enAudioCodecCtx->time_base, outAudioStream->time_base);

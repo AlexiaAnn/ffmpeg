@@ -2,12 +2,12 @@
 
 ExtractAudio::ExtractAudio():inFmtContPointer(nullptr),deCodeContPointer(nullptr),
 							 enCodeContPointer(nullptr),outFmtContPointer(nullptr),
-							 deAudioStream(nullptr)
+							 deAudioStream(nullptr),ret(-1)
 {
 
 }
 
-ExtractAudio::ExtractAudio(const char* srcFilePath, const char* dstFilePath)
+ExtractAudio::ExtractAudio(const char* srcFilePath, const char* dstFilePath):ret(0)
 {
 	inFmtContPointer = new InFormatContext(srcFilePath);
 	if (inFmtContPointer->GetResult() < 0) goto end;
@@ -30,19 +30,20 @@ end:
 
 void ExtractAudio::DoExtract()
 {
+	if (ret < 0) {
+		av_log_error("Problem with initialization of ExtractAudio context,can`t extract audio\n");
+		return;
+	}
 	AVPacket* packet;
 	AVFrame* deFrame;
 	outFmtContPointer->WriteTofilePreparition();
-	while ((packet = inFmtContPointer->GetNextPacket()) != nullptr) {
-		if (packet->stream_index != deAudioStream->index) continue;
-		deCodeContPointer->SendPacket(packet);
-		if ((deFrame = deCodeContPointer->GetReceiveFrame()) == nullptr) continue;
+	while ((deFrame = deCodeContPointer->GetNextFrame(*inFmtContPointer))!=nullptr) {
 		//resample
-		if (swrContPointer->ResampleAudioFrame(deFrame, enCodeContPointer->GetEncodecFrame()) == false) continue;
+		if (swrContPointer->ResampleAudioFrame(deFrame, *enCodeContPointer) == false) continue;
 		//encode
-		enCodeContPointer->EncodeAudioFrame(outFmtContPointer->GetFormatContext(),audioStream);
+		enCodeContPointer->EncodeAudioFrame(*outFmtContPointer, audioStream);
 	}
-	enCodeContPointer->FlushBuffer(outFmtContPointer->GetFormatContext(), audioStream);
+	enCodeContPointer->FlushBuffer(*outFmtContPointer, audioStream);
 	outFmtContPointer->WriteTofileClosure();
 }
 

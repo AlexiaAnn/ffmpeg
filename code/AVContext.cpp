@@ -2,7 +2,7 @@
 AVContext::AVContext() : outAVFmtCtx(nullptr), ret(0), VideoContext(), AudioContext() {}
 AVContext::AVContext(const char *dstFilePath,
                      int sampleRate, AVSampleFormat sampleFormat, AVChannelLayout chLayout,
-                     AVPixelFormat dePixFormat, int fps, int width, int height) : VideoContext(dePixFormat, DEFAULTVIDEOCODECID,fps, width, height), AudioContext(sampleRate, sampleFormat, chLayout), ret(0)
+                     AVPixelFormat dePixFormat, int fps, float bitRatePercent,int width, int height) : VideoContext(dePixFormat, DEFAULTVIDEOCODECID,fps, bitRatePercent,width, height), AudioContext(sampleRate, sampleFormat, chLayout), ret(0)
 {
     outAVFmtCtx = AllocOutFormatContext(dstFilePath);
     if (outAVFmtCtx == nullptr)
@@ -19,8 +19,8 @@ AVContext::AVContext(const char *dstFilePath,
 }
 AVContext::AVContext(const char *dstFilePath,
                      int sampleRate, AVSampleFormat sampleFormat, AVChannelLayout chLayout,
-                     AVPixelFormat dePixFormat, int fps, int deWidth, int deHeight, int enWidth, int enHeight): 
-    VideoContext(dePixFormat, DEFAULTVIDEOCODECID, fps, deWidth, deHeight,enWidth,enHeight), AudioContext(sampleRate, sampleFormat, chLayout), ret(0) {}
+                     AVPixelFormat dePixFormat, int fps, float bitRatePercent,int deWidth, int deHeight, int enWidth, int enHeight):
+    VideoContext(dePixFormat, DEFAULTVIDEOCODECID, fps, bitRatePercent,deWidth, deHeight,enWidth,enHeight), AudioContext(sampleRate, sampleFormat, chLayout), ret(0) {}
 void AVContext::WriteAVPreparition(const char *dstFilePath)
 {
     if (VideoContext::VariableCheck() == false || AudioContext::VariableCheck() == false)

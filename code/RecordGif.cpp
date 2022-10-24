@@ -1,18 +1,23 @@
 #include "RecordGif.h"
 
-RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height)
+RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height):ret(0)
 {
 	enVideoCont = new EnCodecVideoContext(AV_CODEC_ID_GIF, width, height, fps, bitRatePercent);
 	if (enVideoCont->GetResult())goto end;
+	av_log_info("EnCodecVideoContext initialize success\n");
 	swsCont = new AVSwsContext(dePixfmt, width, height, DEFAULTGIFINPUTPIXFMT,width,height);
 	if (swsCont->GetResult()) goto end;
+	av_log_info("AVSwsContext initialize success\n");
 	filterCont = new FilterContext(enVideoCont->GetAVCodecContext());
 	if (filterCont->GetResult() < 0) goto end;
+	av_log_info("FilterContext initialize success\n");
 	outfmtCont = new OutFormatContext(dstFilepath, {
 		{enVideoCont->GetAVCodecContext(),videoStream} });
-
+	if (outfmtCont->GetResult() < 0) goto end;
+	av_log_info("OutFormatContext initialize success\n");
 	deVideoFrame = AllocAVFrame();
 	if (deVideoFrame == nullptr) goto end;
+	av_log_info("de video frame alloc success\n");
 	deVideoFrame->width = width;
 	deVideoFrame->height = height;
 	deVideoFrame->linesize[0] = width * 4;

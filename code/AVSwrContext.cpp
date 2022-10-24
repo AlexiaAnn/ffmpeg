@@ -75,7 +75,7 @@ AVSwrContext::AVSwrContext(AVCodecContext* deAudioCodecCont, AVCodecContext* enA
 {
 }
 
-bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, AVFrame* enFrame)
+bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, AVFrame*& enFrame)
 {
 	//check
 	if (swrCont == nullptr) {
@@ -94,6 +94,38 @@ bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, AVFrame* enFrame)
 		const_cast<const uint8_t**>(deFrame->data), deFrame->nb_samples);
 	enFrame->nb_samples = ret; // error prone
 	av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
+	if (ret < 0)
+	{
+		av_log_error("resample is failed\n");
+		return false;
+	}
+	return true;
+}
+
+bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, EnCodecAudioContext& codeCont)
+{
+	//check=>whether swrcontext was nullptr
+	if (swrCont == nullptr) {
+		av_log_warning("swrcontext is nullptr,cant resample audio frame\n");
+		return false;
+	}
+
+	AVFrame* enFrame = codeCont.GetEncodecFrame();
+	//get dst sample number aboud source frame to target frame
+	int64_t delay = swr_get_delay(swrCont, deFrame->sample_rate);
+	int dstNbSamples = av_rescale_rnd(delay + deFrame->nb_samples, enFrame->sample_rate,
+		deFrame->sample_rate, AV_ROUND_UP);
+	if (dstNbSamples > codeCont.GetNbSamplesOfFrameBuffer()) {
+		codeCont.ReAllocFrame(dstNbSamples);
+		enFrame = codeCont.GetEncodecFrame();
+	}
+	
+	//resample
+	ret = swr_convert(swrCont, enFrame->data, dstNbSamples,
+		const_cast<const uint8_t**>(deFrame->data), deFrame->nb_samples);
+	enFrame->nb_samples = ret;
+	av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
+	//whether resampling was successful
 	if (ret < 0)
 	{
 		av_log_error("resample is failed\n");

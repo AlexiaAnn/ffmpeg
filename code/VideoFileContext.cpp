@@ -75,19 +75,19 @@ VideoFileContext::VideoFileContext() : FileContextBase(), VideoContext()
 {
 }
 VideoFileContext::VideoFileContext(int fps, int width, int height) : FileContextBase(),
-                                                                     VideoContext(DEFAULTPIXFORMAT, DEFAULTVIDEOCODECID, fps, 0, 0, width, height)
+                                                                     VideoContext(DEFAULTPIXFORMAT, DEFAULTVIDEOCODECID, fps, 0.2f,0, 0, width, height)
 {
 }
 VideoFileContext::VideoFileContext(int deWidth,int deHeight,int fps, int width, int height) : FileContextBase(),
-VideoContext(DEFAULTPIXFORMAT, DEFAULTVIDEOCODECID, fps, deWidth, deHeight, width, height)
+VideoContext(DEFAULTPIXFORMAT, DEFAULTVIDEOCODECID, fps, 0.2f,deWidth, deHeight, width, height)
 {
 }
 VideoFileContext::VideoFileContext(AVPixelFormat srcPixelFormat,AVCodecID dstCodecId,int fps, int width, int height) : FileContextBase(),
-VideoContext(srcPixelFormat, dstCodecId, fps, 0, 0, width, height)
+VideoContext(srcPixelFormat, dstCodecId, fps, 0.2f,0, 0, width, height)
 {
 }
 VideoFileContext::VideoFileContext(AVPixelFormat srcPixelFormat, AVCodecID dstCodecId, int deWidth,int deHeight,int fps, int width, int height) : FileContextBase(),
-VideoContext(srcPixelFormat, dstCodecId, fps, deWidth,deHeight, width, height),deVideoCodecCtx(nullptr)
+VideoContext(srcPixelFormat, dstCodecId, fps, 0.2f,deWidth,deHeight, width, height),deVideoCodecCtx(nullptr)
 {
     av_log_info("VideoFileContextxt base init over\n");
     if (ret >= 0) {

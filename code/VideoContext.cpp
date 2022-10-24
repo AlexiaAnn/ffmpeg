@@ -6,42 +6,44 @@ VideoContext::VideoContext() : enVideoCodecCtx(nullptr), outVideoFmtCtx(nullptr)
                                srcPixFormat(DEFAULTPIXFORMAT), outVideoStream(nullptr)
 {
 }
-AVCodecContext *VideoContext::OpenVideoEncodecContext(AVCodecID codecId, int fps, int width, int height)
+AVCodecContext *VideoContext::OpenVideoEncodecContext(AVCodecID enCodecid, int fps, int width, int height,float bitRatePercent)
 {
-    AVCodecContext *context = AllocEncodecContext(codecId);
-    if (codecId == AV_CODEC_ID_H264)
+    AVCodecContext* context = AllocEncodecContext(enCodecid);
+
+    if (enCodecid == AV_CODEC_ID_H264)
     {
-        //context->bit_rate = width * height * 12;
         context->pix_fmt = AV_PIX_FMT_YUV420P;
     }
+    else if (enCodecid == AV_CODEC_ID_GIF) {
+        context->pix_fmt = AV_PIX_FMT_PAL8;
+    }
     else {
-        //context->bit_rate = width * height * 12;
         context->pix_fmt = AV_PIX_FMT_RGBA;
     }
-    //av_opt_set(context->priv_data, "crf", "18", AV_OPT_SEARCH_CHILDREN);
-    //vbr
-    context->flags |= AV_CODEC_FLAG_QSCALE;
-    context->bit_rate = width*height*12;
-    context->rc_min_rate = context->bit_rate - context->bit_rate / 2;
-    context->rc_max_rate = context->bit_rate + context->bit_rate / 2;
+    context->codec_id = enCodecid;
+    context->codec_type = AVMEDIA_TYPE_VIDEO;
     context->width = width;
     context->height = height;
-    context->rc_buffer_size = (int)context->bit_rate;
+    //context->rc_buffer_size = (int)context->bit_rate;
     context->framerate.num = fps;
     context->framerate.den = 1;
     context->time_base.num = 1;
     context->time_base.den = fps;
-    context->gop_size = 60;
-    context->max_b_frames = 0;
-    context->has_b_frames = 0;
-    context->codec_id = codecId;
+    context->thread_count = 4;
     context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    const AVCodec *codec = avcodec_find_encoder(codecId);
+    int64_t crf = (1 - bitRatePercent) * DEFAULTCRFMAXVALUE;
+    if (crf<0 || crf>DEFAULTCRFMAXVALUE) crf = 18;
+    av_opt_set_int(context->priv_data, "crf", crf, 0);
+    av_opt_set(context->priv_data, "preset", "slow", 0);
+    const AVCodec* codec = avcodec_find_encoder(enCodecid);
     av_log_info("is opening video codec context\n");
+    av_log_info("bit rate percent from unity:%f,target crf:%ld\n", bitRatePercent, crf);
+    av_log_info("context bitrate:%ld\n", context->bit_rate);
     ret = avcodec_open2(context, codec, nullptr);
     if (ret < 0)
     {
         av_log_error("could not open codec context\n");
+        return nullptr;
     }
     av_log_info("open video codec context end\n");
     return context;
@@ -181,16 +183,16 @@ bool VideoContext::VariableCheck()
     }
     return true;
 }
-VideoContext::VideoContext(AVCodecID codecId, int fps, int width, int height) : VideoContext(DEFAULTPIXFORMAT, codecId, fps, width, height)
+VideoContext::VideoContext(AVCodecID codecId, int fps, float bitRatePercent,int width, int height) : VideoContext(DEFAULTPIXFORMAT, codecId, fps, bitRatePercent,width, height)
 {
 }
 VideoContext::VideoContext(AVPixelFormat dePixFormat, AVCodecID codecId,
-                           int fps, int width, int height) : VideoContext(dePixFormat, codecId, fps, width, height, width, height)
+                           int fps, float bitRatePercent,int width, int height) : VideoContext(dePixFormat, codecId, fps, bitRatePercent,width, height, width, height)
 {
 }
 VideoContext::VideoContext(AVPixelFormat dePixFormat, AVCodecID codecId,
-                           int fps, int deWidth, int deHeight,
-                           int enWidth, int enHeight) : enVideoCodecCtx(OpenVideoEncodecContext(codecId, fps, enWidth, enHeight)),
+                           int fps, float bitRatePercent,int deWidth, int deHeight,
+                           int enWidth, int enHeight) : enVideoCodecCtx(OpenVideoEncodecContext(codecId, fps, enWidth, enHeight, bitRatePercent)),
                                                         swsCtx(nullptr), enVideoFrame(CreateVideoAVFrame(enVideoCodecCtx)),
                                                         enVideoPacket(AllocAVPacket()), deVideoFrame(nullptr), pts(0), ret(0),
                                                         outVideoFmtCtx(nullptr), outVideoStream(nullptr), srcPixFormat(dePixFormat)

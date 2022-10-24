@@ -1,9 +1,10 @@
 #include "AVSwsContext.h"
 
-AVSwsContext::AVSwsContext(AVPixelFormat dePixFormat, int deWidth, int deHeight, AVPixelFormat enPixFormat, int enWidth, int enHeight)
+AVSwsContext::AVSwsContext(AVPixelFormat dePixFormat, int deWidth, int deHeight, AVPixelFormat enPixFormat, int enWidth, int enHeight):swsCont(nullptr),ret(0)
 {
 	if (dePixFormat == enPixFormat && deWidth == enWidth && deHeight == enHeight) swsCont = nullptr;
 	else {
+		av_log_info("get swscontext start\n");
 		swsCont = sws_getCachedContext(swsCont, deWidth, deHeight, dePixFormat,
 									   enWidth, enHeight, enPixFormat,
 									   SWS_BICUBIC, nullptr, nullptr, nullptr);
@@ -12,6 +13,7 @@ AVSwsContext::AVSwsContext(AVPixelFormat dePixFormat, int deWidth, int deHeight,
 			ret = -1;
 			return;
 		}
+		av_log_info("get swscontext end\n");
 	}
 }
 

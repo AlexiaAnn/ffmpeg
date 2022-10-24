@@ -20,12 +20,18 @@ void LogCallbackTotxt(void* ptr, int level, const char* fmt, va_list vl)
         fclose(fp);
     }
 }
+void WindowsCallbackFunc(void* ptr, int level, const char* fmt, va_list vl)
+{
+    char acLogStr[10240];
+    vsprintf(acLogStr, fmt, vl);
+    std::cout << acLogStr ;
+}
 void (*Debug::LogFunPtr)(char* message, int iSize);
 void (*Debug::LogErrorFunPtr)(char* message, int iSize);
 void Debug::Log(const char* fmt, ...)
 {
     if (Debug::LogFunPtr == nullptr)return;
-    char acLogStr[1024]; // = { 0 }; error prone
+    char acLogStr[10240]; // = { 0 }; error prone
     va_list ap;
     va_start(ap, fmt);
     vsprintf(acLogStr, fmt, ap);

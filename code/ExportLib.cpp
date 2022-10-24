@@ -2,14 +2,16 @@
 #include <thread>
 __declspec(dllexport) void __stdcall Mp4ToMp3(char *srcFileName, char *dstFileName)
 {
+
     av_log_info("mp4 to mp3 start");
     std::thread th([srcFileName, dstFileName]()
-                   {AudioFileContext context(AV_CODEC_ID_MP3);context.ExtractAudioToFile(srcFileName, dstFileName); });
+                   {ExtractAudioFromMp4 context(AV_CODEC_ID_MP3);context.ExtractAudioToFile(srcFileName, dstFileName); });
     th.join();
     av_log_info("mp4 to mp3 end");
 }
 __declspec(dllexport) void __stdcall InitCSharpDelegate(void (*Log)(char *message, int iSize), void (*LogError)(char* message, int iSize))
 {
+    av_log_set_callback(UnityLogCallbackFunc);
     Debug::LogFunPtr = Log;
     Debug::LogErrorFunPtr = LogError;
     av_log_info("Cpp Message:Log has initialized");
@@ -36,19 +38,19 @@ __declspec(dllexport) void __stdcall RecordMP4End()
     delete videoContext;
     videoContext = nullptr;
 }
-__declspec(dllexport) bool __stdcall RecordAVStartWithLogToUnity(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps) {
+__declspec(dllexport) bool __stdcall RecordAVStartWithLogToUnity(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps, float bitRatePercent) {
     av_log_set_callback(UnityLogCallbackFunc);
-    return RecordAVStart(dstFilePath,sampleRate,channelCount,width,height,fps);
+    return RecordAVStart(dstFilePath,sampleRate,channelCount,width,height,fps,bitRatePercent);
 }
-__declspec(dllexport) bool __stdcall RecordAVStartWithLogToTxt(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps)
+__declspec(dllexport) bool __stdcall RecordAVStartWithLogToTxt(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps, float bitRatePercent)
 {
     av_log_set_callback(LogCallbackTotxt);
-    return RecordAVStart(dstFilePath, sampleRate, channelCount, width, height, fps);
+    return RecordAVStart(dstFilePath, sampleRate, channelCount, width, height, fps,bitRatePercent);
 }
-__declspec(dllexport) bool __stdcall RecordAVStart(const char *dstFilePath, int sampleRate, int channelCount, int width, int height, int fps)
+__declspec(dllexport) bool __stdcall RecordAVStart(const char *dstFilePath, int sampleRate, int channelCount, int width, int height, int fps,float bitRatePercent)
 {
     //av_log_set_callback(LogCallbackTotxt);
-    std::thread createVideoCtxThread([dstFilePath, sampleRate, channelCount, width, height, fps]()
+    std::thread createVideoCtxThread([dstFilePath, sampleRate, channelCount, width, height, fps,bitRatePercent]()
                                      {
                                          AVChannelLayout layout;
                                          if (channelCount == 1) {
@@ -63,7 +65,7 @@ __declspec(dllexport) bool __stdcall RecordAVStart(const char *dstFilePath, int 
                                          }
                                          try
                                          {
-                                             vaContext = new AVContext(dstFilePath, sampleRate, AV_SAMPLE_FMT_FLT, layout, AV_PIX_FMT_RGBA, fps, width, height);
+                                             vaContext = new AVContext(dstFilePath, sampleRate, AV_SAMPLE_FMT_FLT, layout, AV_PIX_FMT_RGBA, fps, bitRatePercent,width, height);
                                          }
                                          catch (const std::exception& e)
                                          {
@@ -481,7 +483,7 @@ __declspec(dllexport) bool __stdcall RecordGifStart(const char* dstFilePath, int
 __declspec(dllexport) void __stdcall WriteGifFrame(void* dataPtr)
 {
     if (recordGif == nullptr) {
-        av_log_error("the vacontext is nullptr,write failed");
+        av_log_error("the recordGif is nullptr,write failed");
         return;
     }
     try
@@ -499,7 +501,7 @@ __declspec(dllexport) void __stdcall WriteGifFrame(void* dataPtr)
 __declspec(dllexport) void __stdcall FlushGifBuffer()
 {
     if (recordGif == nullptr) {
-        av_log_error("the vacontext is nullptr,write failed");
+        av_log_error("the recordGif is nullptr,write failed");
         return;
     }
     try
@@ -516,7 +518,7 @@ __declspec(dllexport) void __stdcall FlushGifBuffer()
 __declspec(dllexport) void __stdcall RecordGifEnd()
 {
     if (recordGif == nullptr) {
-        av_log_error("the vacontext is nullptr,can`t end record");
+        av_log_error("the recordGif is nullptr,can`t end record");
         return;
     }
     try
