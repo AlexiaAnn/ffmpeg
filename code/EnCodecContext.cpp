@@ -1,6 +1,6 @@
 #include "EnCodecContext.h"
 
-EnCodecContext::EnCodecContext():codecCont(nullptr),ret(0)
+EnCodecContext::EnCodecContext():codecCont(nullptr),frame(nullptr),packet(nullptr),pts(0),ret(-1)
 {
 }
 

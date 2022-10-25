@@ -42,9 +42,10 @@ bool RecordMp4::WriteAVPreparition()
 
 bool RecordMp4::WriteVideoToFile(void* data, int length)
 {
+	FlipImage((unsigned char*)data,enVideoCont->GetAVCodecContext()->width, enVideoCont->GetAVCodecContext()->height);
 	deVideoFrame->data[0] = (uint8_t*)data;
-	swsCont->RescaleVideoFrame(deVideoFrame,enVideoCont->GetEncodecFrame());
-	return enVideoCont->EncodeVideoFrame(outfmtCont->GetFormatContext(),videoStream);
+	swsCont->RescaleVideoFrame(deVideoFrame,*enVideoCont);
+	return enVideoCont->EncodeFrame(*outfmtCont,videoStream);
 }
 
 bool RecordMp4::WriteAudioToFile(void* data, int length)
@@ -53,18 +54,18 @@ bool RecordMp4::WriteAudioToFile(void* data, int length)
 	deAudioFrame->data[1] = (uint8_t*)((float*)data + length);
 	deAudioFrame->nb_samples = length;
 	swrCont->ResampleAudioFrame(deAudioFrame,*enAudioCont);
-	return enAudioCont->EncodeAudioFrame(outfmtCont->GetFormatContext(),videoStream);
+	return enAudioCont->EncodeFrame(*outfmtCont,audioStream);
 	
 }
 
 bool RecordMp4::FlushEnVideoCodecBuffer()
 {
-	return enVideoCont->FlushBuffer(outfmtCont->GetFormatContext(),videoStream);
+	return enVideoCont->FlushBuffer(*outfmtCont,videoStream);
 }
 
 bool RecordMp4::FlushEnAudioCodecBuffer()
 {
-	return enAudioCont->FlushBuffer(outfmtCont->GetFormatContext(),audioStream);
+	return enAudioCont->FlushBuffer(*outfmtCont,audioStream);
 }
 
 bool RecordMp4::WriteAVTailer()

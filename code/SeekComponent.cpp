@@ -9,7 +9,7 @@ int64_t SeekComponent::FrameIndexToPts(int frameIndex)
 }
 
 SeekComponent::SeekComponent(const char* srcFilePath):FileContextBase(srcFilePath),
-VideoFileContext(AV_PIX_FMT_YUV420P, AV_CODEC_ID_GIF,
+VideoFileContext(AV_PIX_FMT_YUV420P, AV_CODEC_ID_MPEG4,
     inFmtCtx->streams[getVideoStreamIndex()]->codecpar->width,
     inFmtCtx->streams[getVideoStreamIndex()]->codecpar->height,
     inFmtCtx->streams[getVideoStreamIndex()]->r_frame_rate.num,

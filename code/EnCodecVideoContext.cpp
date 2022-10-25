@@ -62,11 +62,11 @@ AVFrame* EnCodecVideoContext::CreateVideoFrame(const AVCodecContext* codeCont)
     return frame;
 }
 
-EnCodecVideoContext::EnCodecVideoContext() :EnCodecContext(), frame(nullptr), pts(0), packet(nullptr)
+EnCodecVideoContext::EnCodecVideoContext() :EnCodecContext()
 {
 }
 
-EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int height, int fps, float bitRatePercent):EnCodecContext(),pts(0)
+EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int height, int fps, float bitRatePercent):EnCodecContext()
 {
     codecCont = OpenEncodecContext(codecId,width,height,fps,bitRatePercent);
     if (codecCont == nullptr) {
@@ -92,51 +92,19 @@ end:
     return;
 }
 
-bool EnCodecVideoContext::EncodeVideoFrame(AVFormatContext* fmtCont, AVStream* outStream)
+bool EnCodecVideoContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream)
 {
-    if (frame != nullptr)
-    {
-        frame->pts = pts;
-        pts += 1;
-    }
-    ret = avcodec_send_frame(codecCont, frame);
-    if (ret < 0)
-    {
-        av_log_error("send frame to enVideoCodecContext error,ret:%d\n",ret);
-        return false;
-    }
-    while (ret >= 0)
-    {
-        ret = avcodec_receive_packet(codecCont, packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-        {
-            av_log_error("eagain averror_eof %d\n", ret);
-            return false;
-        }
-
-        if (ret < 0)
-        {
-            av_log_error("enVideoCodecContext receive packet error\n");
-            return false;
-        }
-        av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
-        packet->stream_index = outStream->index;
-        av_interleaved_write_frame(fmtCont, packet);
-        av_packet_unref(packet);
-        if (ret < 0)
-            return false;
-    }
-    return true;
+    return EncodeFrame(outFmtCont,outStream,frame);
 }
 
-bool EnCodecVideoContext::EncodeVideoFrame(AVFormatContext* fmtCont, AVStream* outStream, AVFrame* videoFrame)
+bool EnCodecVideoContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream, AVFrame* enFrame)
 {
-    if (videoFrame != nullptr)
+    if (enFrame != nullptr)
     {
-        videoFrame->pts = pts;
+        enFrame->pts = pts;
         pts += 1;
     }
-    ret = avcodec_send_frame(codecCont, videoFrame);
+    ret = avcodec_send_frame(codecCont, enFrame);
     if (ret < 0)
     {
         av_log_error("send frame to enVideoCodecContext error,ret:%d\n", ret);
@@ -158,7 +126,7 @@ bool EnCodecVideoContext::EncodeVideoFrame(AVFormatContext* fmtCont, AVStream* o
         }
         av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
         packet->stream_index = outStream->index;
-        av_interleaved_write_frame(fmtCont, packet);
+        av_interleaved_write_frame(outFmtCont.GetFormatContext(), packet);
         av_packet_unref(packet);
         if (ret < 0)
             return false;
@@ -166,11 +134,12 @@ bool EnCodecVideoContext::EncodeVideoFrame(AVFormatContext* fmtCont, AVStream* o
     return true;
 }
 
-bool EnCodecVideoContext::FlushBuffer(AVFormatContext* fmtCont, AVStream* outStream)
+
+bool EnCodecVideoContext::FlushBuffer(OutFormatContext& outFmtCont, AVStream* outStream)
 {
     AVFrame* tempFrame = frame;
     frame = nullptr;
-    int result = EncodeVideoFrame(fmtCont, outStream);
+    int result = EncodeFrame(outFmtCont, outStream);
     frame = tempFrame;
     return result;
 }

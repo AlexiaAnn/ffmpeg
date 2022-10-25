@@ -6,10 +6,7 @@ class EnCodecAudioContext :
     public EnCodecContext
 {
 private:
-    AVFrame* frame;
     int maxNbSamples;
-    int pts;
-    AVPacket* packet;
 protected:
     
     AVCodecContext* OpenEncodecContext(AVCodecID enCodecid);
@@ -17,11 +14,11 @@ protected:
 public:
     EnCodecAudioContext();
     EnCodecAudioContext(AVCodecID codecId);
+
     void ReAllocFrame(int dstNbSamples);
-    bool EncodeAudioFrame(AVFormatContext* fmtCont,AVStream* outStream);
-    bool EncodeAudioFrame(OutFormatContext& outFmtCont, AVStream* outStream);
-    bool FlushBuffer(AVFormatContext* fmtCont, AVStream* outStream);
-    bool FlushBuffer(OutFormatContext& outFmtCont, AVStream* outStream);
+    bool EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream) override;
+    bool EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream, AVFrame* enFrame) override;
+    bool FlushBuffer(OutFormatContext& outFmtCont, AVStream* outStream) override;
     int GetNbSamplesOfFrameBuffer() const;
     AVFrame* GetEncodecFrame() const;
     ~EnCodecAudioContext();

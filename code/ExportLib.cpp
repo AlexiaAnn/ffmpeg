@@ -65,7 +65,7 @@ __declspec(dllexport) bool __stdcall RecordAVStart(const char *dstFilePath, int 
                                          }
                                          try
                                          {
-                                             vaContext = new AVContext(dstFilePath, sampleRate, AV_SAMPLE_FMT_FLT, layout, AV_PIX_FMT_RGBA, fps, bitRatePercent,width, height);
+                                             vaContext = new RecordMp4(dstFilePath, sampleRate, AV_SAMPLE_FMT_FLT, layout, AV_PIX_FMT_RGBA, fps, bitRatePercent,width, height);
                                          }
                                          catch (const std::exception& e)
                                          {
@@ -74,14 +74,14 @@ __declspec(dllexport) bool __stdcall RecordAVStart(const char *dstFilePath, int 
     createVideoCtxThread.join();
     if (vaContext == nullptr)
         return false;
-    if (vaContext->GetRet() < 0) {
+    if (vaContext->GetResult() < 0) {
         delete vaContext;
         vaContext = nullptr;
         return false;
     }
     try
     {
-        vaContext->WriteAVPreparition(dstFilePath);
+        vaContext->WriteAVPreparition();
         av_log_info("preparation is successful");
         return true;
     }
@@ -101,7 +101,7 @@ __declspec(dllexport) void __stdcall WriteVideoFrame(void* dataPtr)
     }
     try
     {
-        vaContext->Flip((unsigned char*)dataPtr);
+        //vaContext->Flip((unsigned char*)dataPtr);
         vaContext->WriteVideoToFile(dataPtr,0);
         av_log_info("write a video frame success");
     }
@@ -307,12 +307,12 @@ __declspec(dllexport) void __stdcall CloseNewPlayer()
 __declspec(dllexport) int __stdcall InitAudioWaveContext(char* srcFilePath)
 {
     av_log_info("initing audio wave context\n");
-    AudioWave* audioWave = nullptr;
+    AudioWaveA* audioWave = nullptr;
     std::thread waveThread([&audioWave,srcFilePath]() {
-        audioWave = new AudioWave(srcFilePath);
+        audioWave = new AudioWaveA(srcFilePath);
         });
     waveThread.join();
-    if (audioWave->GetRet() < 0) {
+    if (audioWave->GetResult() < 0) {
         delete audioWave;
         audioWave = nullptr;
         av_log_info("initing audio wave failed\n");
@@ -356,7 +356,7 @@ __declspec(dllexport) void __stdcall GetWaveMetaData(void* result,int id)
 {
     ID_CHECK_NORETURE
     waveVectorMutex.lock();
-    AudioWave* point = audioWaves[id];
+    AudioWaveA* point = audioWaves[id];
     waveVectorMutex.unlock();
     point->GetMetaData((float*)result);
 }
@@ -374,7 +374,7 @@ __declspec(dllexport) double __stdcall GetAudioSecondsOfDuration(int id)
 {
     ID_CHECK_RETUREZERO
     waveVectorMutex.lock();
-    AudioWave* point = audioWaves[id];
+    AudioWaveA* point = audioWaves[id];
     waveVectorMutex.unlock();
     return point->GetSecondsOfDuration();
 }
@@ -382,12 +382,12 @@ __declspec(dllexport) double __stdcall GetAudioSecondsOfDuration(int id)
 __declspec(dllexport) int __stdcall InitSeekComponent(char* srcFilePath)
 {
     av_log_info("init seek component start\n");
-    SeekComponent* seekComponent = nullptr;
+    SeekVideo* seekComponent = nullptr;
     std::thread seekThread([&seekComponent,srcFilePath]() {
-        seekComponent = new SeekComponent(srcFilePath);
+        seekComponent = new SeekVideo(srcFilePath);
         });
     seekThread.join();
-    if (seekComponent->GetRet() < 0) {
+    if (seekComponent->GetResult() < 0) {
         delete seekComponent;
         seekComponent = nullptr;
         av_log_error("init seek component failed\n");
@@ -405,7 +405,7 @@ __declspec(dllexport) int __stdcall GetSeekVideoWidth(int id)
 {
     ID_CHECK_RETUREZERO
     seekVectorMutex.lock();
-    SeekComponent* point = seekCpts[id];
+    SeekVideo* point = seekCpts[id];
     seekVectorMutex.unlock();
     return point->GetVideoWidth();
 }
@@ -414,7 +414,7 @@ __declspec(dllexport) int __stdcall GetSeekVideoHeight(int id)
 {
     ID_CHECK_RETUREZERO
     seekVectorMutex.lock();
-    SeekComponent* point = seekCpts[id];
+    SeekVideo* point = seekCpts[id];
     seekVectorMutex.unlock();
     return point->GetVideoHeight();
 }
@@ -422,7 +422,7 @@ __declspec(dllexport) double __stdcall GetSeekDurationSeconds(int id)
 {
     ID_CHECK_RETUREZERO
     seekVectorMutex.lock();
-    SeekComponent* point = seekCpts[id];
+    SeekVideo* point = seekCpts[id];
     seekVectorMutex.unlock();
     return point->GetDuration();
 }
@@ -431,7 +431,7 @@ __declspec(dllexport) void __stdcall SeekVideoFrameByPercent(float percent, void
     ID_CHECK_NORETURE
     av_log_info("seek video frame start\n");
     seekVectorMutex.lock();
-    SeekComponent* point = seekCpts[id];
+    SeekVideo* point = seekCpts[id];
     seekVectorMutex.unlock();
     point->GetFrameDataByPercent(percent,data,length);
     av_log_info("seek video frame end\n");

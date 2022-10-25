@@ -81,10 +81,12 @@ VideoFileContext::VideoFileContext(int fps, int width, int height) : FileContext
 VideoFileContext::VideoFileContext(int deWidth,int deHeight,int fps, int width, int height) : FileContextBase(),
 VideoContext(DEFAULTPIXFORMAT, DEFAULTVIDEOCODECID, fps, 0.2f,deWidth, deHeight, width, height)
 {
+
 }
 VideoFileContext::VideoFileContext(AVPixelFormat srcPixelFormat,AVCodecID dstCodecId,int fps, int width, int height) : FileContextBase(),
 VideoContext(srcPixelFormat, dstCodecId, fps, 0.2f,0, 0, width, height)
 {
+
 }
 VideoFileContext::VideoFileContext(AVPixelFormat srcPixelFormat, AVCodecID dstCodecId, int deWidth,int deHeight,int fps, int width, int height) : FileContextBase(),
 VideoContext(srcPixelFormat, dstCodecId, fps, 0.2f,deWidth,deHeight, width, height),deVideoCodecCtx(nullptr)

@@ -1,6 +1,6 @@
 #include "RecordGif.h"
 
-RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height):ret(0)
+RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height):ret(0),isFirstFrame(true)
 {
 	enVideoCont = new EnCodecVideoContext(AV_CODEC_ID_GIF, width, height, fps, bitRatePercent);
 	if (enVideoCont->GetResult())goto end;
@@ -41,6 +41,10 @@ bool RecordGif::WriteGIFPreparition()
 
 bool RecordGif::WriteVideoToFile(void* data, int length)
 {
+	if (isFirstFrame) {
+		isFirstFrame = false;
+		return false;
+	}
 	AVFrame* sinkFrame = nullptr;
 	FlipImage((unsigned char *)data, enVideoCont->GetAVCodecContext()->width, enVideoCont->GetAVCodecContext()->height);
 	deVideoFrame->data[0] = (uint8_t*)data;
@@ -51,7 +55,7 @@ bool RecordGif::WriteVideoToFile(void* data, int length)
 	sinkFrame = filterCont->GetFrame();
 	if (sinkFrame == nullptr) goto end;
 
-	return enVideoCont->EncodeVideoFrame(outfmtCont->GetFormatContext(),videoStream,sinkFrame);
+	return enVideoCont->EncodeFrame(*outfmtCont,videoStream,sinkFrame);
 end:
 	av_frame_free(&swsFrame);
 	return false;
@@ -63,7 +67,7 @@ bool RecordGif::FlushEnVideoCodecBuffer()
 	if (filterCont->FlushBuffer() == false)return false;
 	do {
 		sinkFrame = filterCont->GetFrame();
-		enVideoCont->EncodeVideoFrame(outfmtCont->GetFormatContext(), videoStream, sinkFrame);
+		enVideoCont->EncodeFrame(*outfmtCont, videoStream, sinkFrame);
 	} while (sinkFrame != nullptr);
 	return true;
 }

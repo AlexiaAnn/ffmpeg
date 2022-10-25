@@ -12,6 +12,7 @@ private:
 	FilterContext* filterCont;
 	AVStream* videoStream;
 	AVFrame* deVideoFrame;
+	bool isFirstFrame;
 	int pts;
 	int ret;
 public:

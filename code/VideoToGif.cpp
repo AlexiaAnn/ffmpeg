@@ -47,13 +47,13 @@ bool VideoToGif::DoConvert()
 		if (filterCont->AddFrame(swsFrame) == false)continue;
 		sinkFrame = filterCont->GetFrame();
 		if (sinkFrame==nullptr) continue;
-		enCodeCont->EncodeVideoFrame(outfmtCont->GetFormatContext(),videoStream,sinkFrame);
+		enCodeCont->EncodeFrame(*outfmtCont,videoStream,sinkFrame);
 	}
 	//³åË¢ÂË²¨Æ÷»º³åÆ÷
 	filterCont->FlushBuffer();
 	do {
 		sinkFrame = filterCont->GetFrame();
-		enCodeCont->EncodeVideoFrame(outfmtCont->GetFormatContext(), videoStream, sinkFrame);
+		enCodeCont->EncodeFrame(*outfmtCont, videoStream, sinkFrame);
 	} while (sinkFrame != nullptr);
 	outfmtCont->WriteTofileClosure();
 	return true;

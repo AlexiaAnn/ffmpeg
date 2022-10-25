@@ -38,6 +38,7 @@ AVFrame* SeekVideo::GetNextFrame()
     //首先从解码器中解码已经缓存的packet数据
     AVFrame* frame = nullptr;
     frame = deCodecont->GetNextFrame(*inFmtCont);
+    if (frame == nullptr) return nullptr;
     /*while (frame == nullptr) {
         frame = deCodecont->GetReceiveFrame();
         if (frame == nullptr) {
@@ -98,6 +99,7 @@ SeekVideo::SeekVideo(const char* srcFilePath):curFrameIndex(-1)
         frameNumber = videoStream->nb_frames;
         av_log_info("nb_frames>0,frame count of video is %d\n", frameNumber);
     }
+    return;
 end:
     ret = -1;
     return;

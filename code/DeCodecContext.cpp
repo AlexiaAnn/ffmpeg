@@ -1,6 +1,10 @@
 #include "DeCodecContext.h"
 
 DeCodecContext::DeCodecContext(AVStream* stream) :ret(0) {
+    if (stream == nullptr) {
+        ret = -1;
+        return;
+    }
     codecCont = OpenDecodecContextByStream(stream);
     if (codecCont == nullptr) {
         av_log_error("open decodec context error,DeCodecContext initial failed\n");

@@ -25,6 +25,42 @@ void EnCodecAudioContext::ReAllocFrame(int dstNbSamples)
     maxNbSamples = dstNbSamples;
 }
 
+bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream)
+{
+    return EncodeFrame(outFmtCont, outStream, frame);
+}
+
+bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* outStream, AVFrame* enFrame)
+{
+    if (enFrame != nullptr)
+    {
+        enFrame->pts = pts;
+        pts += enFrame->nb_samples;
+    }
+    AVFormatContext* fmtCont = outFmtCont.GetFormatContext();
+    ret = avcodec_send_frame(codecCont, enFrame);
+    if (ret < 0) return false;
+    while (ret >= 0)
+    {
+        ret = avcodec_receive_packet(codecCont, packet);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            return false;
+        else if (ret < 0)
+        {
+            av_log_error("Error encoding audio frame\n");
+            return false;
+        }
+        av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
+        packet->stream_index = outStream->index;
+        av_interleaved_write_frame(fmtCont, packet);
+        av_log_info("write a packet to out formatcontext success\n");
+        av_packet_unref(packet);
+        if (ret < 0)
+            return false;
+    }
+    return true;
+}
+
 AVCodecContext* EnCodecAudioContext::OpenEncodecContext(AVCodecID encodecid)
 {
     AVCodecContext* codecContext = AllocEncodecContext(encodecid);
@@ -82,12 +118,12 @@ AVFrame* EnCodecAudioContext::InitAudioFrame(AVCodecContext* codeCont, int dstNb
 }
 
 
-EnCodecAudioContext::EnCodecAudioContext() :EnCodecContext(),frame(nullptr),pts(0),packet(nullptr),maxNbSamples(0)
+EnCodecAudioContext::EnCodecAudioContext() :EnCodecContext(),maxNbSamples(0)
 {
-
+    
 }
 
-EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):pts(0),maxNbSamples(0)
+EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):maxNbSamples(0)
 {
     codecCont = OpenEncodecContext(codecId);
     if (codecCont == nullptr) {
@@ -104,86 +140,17 @@ EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):pts(0),maxNbSamples(
         av_log_error("error when allocing packet,audio codeccontext initialize failed\n");
         goto end;
     }
+    return;
 end:
     ret = -1;
     return;
-}
-
-bool EnCodecAudioContext::EncodeAudioFrame(AVFormatContext* fmtCont,AVStream* outStream)
-{
-    if (frame != nullptr)
-    {
-        frame->pts = pts;
-        pts += frame->nb_samples;
-    }
-    ret = avcodec_send_frame(codecCont, frame);
-    if (ret < 0) return false;
-    while (ret >= 0)
-    {
-        ret = avcodec_receive_packet(codecCont, packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-            return false;
-        else if (ret < 0)
-        {
-            av_log_error("Error encoding audio frame\n");
-            return false;
-        }
-        av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
-        packet->stream_index = outStream->index;
-        av_interleaved_write_frame(fmtCont, packet);
-        av_log_info("write a packet to out formatcontext success\n");
-        av_packet_unref(packet);
-        if (ret < 0)
-            return false;
-    }
-    return true;
-}
-
-bool EnCodecAudioContext::EncodeAudioFrame(OutFormatContext& outFmtCont, AVStream* outStream)
-{
-    if (frame != nullptr)
-    {
-        frame->pts = pts;
-        pts += frame->nb_samples;
-    }
-    AVFormatContext* fmtCont = outFmtCont.GetFormatContext();
-    ret = avcodec_send_frame(codecCont, frame);
-    if (ret < 0) return false;
-    while (ret >= 0)
-    {
-        ret = avcodec_receive_packet(codecCont, packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-            return false;
-        else if (ret < 0)
-        {
-            av_log_error("Error encoding audio frame\n");
-            return false;
-        }
-        av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
-        packet->stream_index = outStream->index;
-        av_interleaved_write_frame(fmtCont, packet);
-        av_log_info("write a packet to out formatcontext success\n");
-        av_packet_unref(packet);
-        if (ret < 0)
-            return false;
-    }
-    return true;
-}
-
-bool EnCodecAudioContext::FlushBuffer(AVFormatContext* fmtCont, AVStream* outStream)
-{
-    AVFrame* tempFrame = frame;
-    frame = nullptr;
-    bool result = EncodeAudioFrame(fmtCont,outStream);
-    frame = tempFrame;
-    return result;
 }
 
 bool EnCodecAudioContext::FlushBuffer(OutFormatContext& outFmtCont, AVStream* outStream)
 {
     AVFrame* tempFrame = frame;
     frame = nullptr;
-    bool result = EncodeAudioFrame(outFmtCont.GetFormatContext(), outStream);
+    bool result = EncodeFrame(outFmtCont, outStream);
     frame = tempFrame;
     return result;
 }

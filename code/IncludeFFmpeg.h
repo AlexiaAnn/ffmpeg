@@ -34,6 +34,8 @@ extern "C"
 #define av_log_info(str, ...) Debug::Log(str, ##__VA_ARGS__)
 #define av_log_warning(str,...)
 #endif // UnityLog
+#define MONOLAYOUT { AV_CHANNEL_ORDER_NATIVE, (1), AV_CH_LAYOUT_MONO }
+#define STEREOLAYOUT { AV_CHANNEL_ORDER_NATIVE, (2), AV_CH_LAYOUT_STEREO }
 void UnityLogCallbackFunc(void *, int, const char *, va_list);
 void LogCallbackTotxt(void *, int, const char *, va_list);
 void WindowsCallbackFunc(void*, int, const char*, va_list);

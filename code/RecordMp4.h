@@ -6,6 +6,7 @@
 #include "OutFormatContext.h"
 #define DEFAULTAUDIOCODECID AV_CODEC_ID_MP3
 #define DEFAULTVIDEOCODECID AV_CODEC_ID_H264
+
 class RecordMp4
 {
 private:

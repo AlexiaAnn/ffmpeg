@@ -43,7 +43,7 @@ AVCodecContext *VideoContext::OpenVideoEncodecContext(AVCodecID enCodecid, int f
     if (ret < 0)
     {
         av_log_error("could not open codec context\n");
-        return nullptr;
+        //return nullptr;
     }
     av_log_info("open video codec context end\n");
     return context;

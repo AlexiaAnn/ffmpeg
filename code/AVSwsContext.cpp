@@ -2,7 +2,10 @@
 
 AVSwsContext::AVSwsContext(AVPixelFormat dePixFormat, int deWidth, int deHeight, AVPixelFormat enPixFormat, int enWidth, int enHeight):swsCont(nullptr),ret(0)
 {
-	if (dePixFormat == enPixFormat && deWidth == enWidth && deHeight == enHeight) swsCont = nullptr;
+	if (dePixFormat == enPixFormat && deWidth == enWidth && deHeight == enHeight) {
+		swsCont = nullptr;
+		av_log_info("AVSwsContext is unnecessary\n");
+	}
 	else {
 		av_log_info("get swscontext start\n");
 		swsCont = sws_getCachedContext(swsCont, deWidth, deHeight, dePixFormat,
@@ -32,6 +35,11 @@ AVSwsContext::AVSwsContext(AVCodecContext* deCodecont, AVCodecContext* enCodecon
 {
 }
 
+bool AVSwsContext::IsNeedRescale() const
+{
+	return swsCont != nullptr;
+}
+
 bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, AVFrame* enVideoFrame)
 {
 	if (swsCont == nullptr) {
@@ -43,6 +51,24 @@ bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, AVFrame* enVideoFram
 	if (ret <= 0) {
 		char errorStr[AV_ERROR_MAX_STRING_SIZE];
 		av_make_error_string(errorStr, AV_ERROR_MAX_STRING_SIZE,ret);
+		av_log_error("sws scale the video frame failed,ret code:%s", errorStr);
+		return false;
+	}
+	return true;
+}
+
+bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, EnCodecVideoContext& codeCont)
+{
+	if (swsCont == nullptr) {
+		av_log_warning("swscontext is nullptr,cant rescale video frame\n");
+		return false;
+	}
+	AVFrame* enVideoFrame = codeCont.GetEncodecFrame();
+	ret = sws_scale(swsCont, deVideoFrame->data, deVideoFrame->linesize, 0,
+		deVideoFrame->height, enVideoFrame->data, enVideoFrame->linesize);
+	if (ret <= 0) {
+		char errorStr[AV_ERROR_MAX_STRING_SIZE];
+		av_make_error_string(errorStr, AV_ERROR_MAX_STRING_SIZE, ret);
 		av_log_error("sws scale the video frame failed,ret code:%s", errorStr);
 		return false;
 	}

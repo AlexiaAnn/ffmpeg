@@ -6,25 +6,29 @@
 #include "NewPlayer.h"
 #include "AudioWave.h"
 #include "SeekComponent.h"
+#include "SeekVideo.h"
 #include "RecordGif.h"
+#include "RecordMp4.h"
 #include "ExtractAudioFromMp4.h"
+#include "AudioWaveA.h"
+#include "ComponentManager.h"
 #include <thread>
 #define Export(type)  extern "C" __declspec(dllexport) type __stdcall
 #define ID_CHECK_RETUREZERO if (id < 0) {av_log_info("c++ dll id is incorrect,dll can`t find target context point\n");return 0;}
 #define ID_CHECK_NORETURE if (id < 0) {av_log_info("c++ dll id is incorrect,dll can`t find target context point\n");}
 VideoFileContext* videoContext = nullptr;
 std::thread frameConsumeThread;
-AVContext* vaContext = nullptr;
+RecordMp4* vaContext = nullptr;
 AVPlayer* player = nullptr;
 NewPlayer* newPlayer = nullptr;
 AudioWave* waveContext = nullptr;
 RecordGif* recordGif=nullptr;
 
 //seekcomponent
-std::vector<SeekComponent*> seekCpts;
+std::vector<SeekVideo*> seekCpts;
 std::mutex seekVectorMutex;
 //audiowave
-std::vector<AudioWave*> audioWaves;
+std::vector<AudioWaveA*> audioWaves;
 std::mutex waveVectorMutex;
 Export(void) Mp4ToMp3(char* srcFileName, char* dstFileName);
 Export(void) InitCSharpDelegate(void (*Log)(char* message, int iSize), void (*LogError)(char* message, int iSize));
