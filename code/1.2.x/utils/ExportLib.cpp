@@ -14,7 +14,7 @@ Declspec void StdDll InitCSharpDelegate(void (*Log)(char *message, int iSize), v
     Debug::LogFunPtr = Log;
     Debug::LogErrorFunPtr = LogError;
     av_log_info("Cpp Message:Log has initialized");
-    av_log_info("ffmpeg version:%s,id:%s", "5.10", "1.2.1");
+    av_log_info("ffmpeg version:%s,ffmpeg2 date:%s", "5.10", "2022.11.7");
 }
 
 Declspec bool StdDll RecordAVStart(const char *dstFilePath, int sampleRate, int channelCount,
@@ -233,9 +233,9 @@ Declspec double StdDll GetSeekDurationSeconds(int id)
 Declspec void StdDll SeekVideoFrameByPercent(float percent, void *data, int length, int id)
 {
     ID_CHECK_NORETURE
-    av_log_info("seek video frame start\n");
+    av_log_info("seek video frame start");
     seekCpts.GetPointerById(id)->GetFrameDataByPercent(percent, data, length);
-    av_log_info("seek video frame end\n");
+    av_log_info("seek video frame end");
 }
 Declspec void StdDll DestroySeekComponent(int id)
 {

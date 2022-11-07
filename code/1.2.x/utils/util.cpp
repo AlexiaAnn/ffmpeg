@@ -216,3 +216,18 @@ void FlipImage(unsigned char* src,int width,int height)
 
     free(tempSrc);
 }
+
+AVPixelFormat GetPixFormatByCodecId(AVCodecID codecId)
+{
+    switch (codecId)
+    {
+    case AV_CODEC_ID_H264:
+        return AV_PIX_FMT_YUV420P;
+    case AV_CODEC_ID_GIF:
+        return AV_PIX_FMT_PAL8;
+    default:
+        av_log_info("target AVCodecId is not supported");
+        return AV_PIX_FMT_RGBA;
+    }
+    
+}
