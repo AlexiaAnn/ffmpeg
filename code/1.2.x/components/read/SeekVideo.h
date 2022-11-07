@@ -1,19 +1,19 @@
 #pragma once
-#include "InFormatContext.h"
-#include "DeCodecContext.h"
-#include "AVSwsContext.h"
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/DeCodecContext.h"
+#include "../ffmpegutils/AVSwsContext.h"
 class SeekVideo
 {
 private:
-	InFormatContext* inFmtCont;
-	DeCodecContext* deCodecont;
-	AVSwsContext* swsContPointer;
-	AVStream* videoStream;
-	AVFrame* swsVideoFrame;
-	int frameNumber;
-	int fps;
-	int ret;
-	int curFrameIndex;
+	InFormatContext* inFmtCont = nullptr;
+	DeCodecContext* deCodecont = nullptr;
+	AVSwsContext* swsContPointer = nullptr;
+	AVStream* videoStream = nullptr;
+	AVFrame* swsVideoFrame = nullptr;
+	int frameNumber=0;
+	int fps=0;
+	int ret=0;
+	int curFrameIndex=0;
 private:
 	inline int PtsToFrameIndex(int64_t pts);
 	inline int64_t FrameIndexToPts(int frameIndex);

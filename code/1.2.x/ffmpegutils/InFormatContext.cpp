@@ -1,5 +1,5 @@
 #include "InFormatContext.h"
-InFormatContext::InFormatContext(const char* srcFilePath) :ret(0) {
+InFormatContext::InFormatContext(const char* srcFilePath) :ret(0),inFmtContext(nullptr),dePacket(nullptr) {
     inFmtContext = GetFormatContextByFileName(srcFilePath);
     if (inFmtContext == nullptr) goto end;
     avformat_find_stream_info(inFmtContext,nullptr);
@@ -15,8 +15,11 @@ int InFormatContext::GetResult() const {
     return ret;
 }
 InFormatContext::~InFormatContext() {
-    avformat_free_context(inFmtContext);
+    av_log_info("InFormatContext deConstructor\n");
     av_packet_free(&dePacket);
+    dePacket = nullptr;
+    avformat_free_context(inFmtContext);
+    inFmtContext = nullptr;
 }
 
 void InFormatContext::DumpFileInfo() const {
@@ -58,5 +61,6 @@ AVPacket* InFormatContext::GetNextPacket() {
 
 //informatcontext
 AVFormatContext* InFormatContext::GetInFormatContext() const {
+    if (inFmtContext == nullptr) av_log_error("in format context is nullptr,it will be casuing some error\n");
     return inFmtContext;
 }

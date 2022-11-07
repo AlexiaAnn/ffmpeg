@@ -1,14 +1,14 @@
 #pragma once
-#include "util.h"
-#include "OutFormatContext.h"
+#include "../utils/util.h"
+#include "../ffmpegutils/OutFormatContext.h"
 class EnCodecContext
 {
 protected:
-	AVCodecContext* codecCont;
-	AVFrame* frame;
-	AVPacket* packet;
-	int ret;
-	int pts;
+	AVCodecContext* codecCont = nullptr;
+	AVFrame* frame = nullptr;
+	AVPacket* packet = nullptr;
+	int ret=0;
+	int pts=0;
 	
 	
 public:

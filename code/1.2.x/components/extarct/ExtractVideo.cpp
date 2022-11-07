@@ -20,7 +20,7 @@ ExtractVideo::ExtractVideo(const char* srcFilePath, const char* dstFilePath):Ext
 												deStream->codecpar->width,
 												deStream->codecpar->height,
 												deStream->avg_frame_rate.num/deStream->avg_frame_rate.den,
-												DEFAULTBITRATEPERCENT);
+												DEFAULTBITRATEPERCENT,DEFAULTCRFMIN,DEFAULTCRFMAX,0);
 	if (enCodeContPointer->GetResult() < 0) goto end;
 
 	swsContPointer = new AVSwsContext(deCodeContPointer->GetCodecContext(),enCodeContPointer->GetAVCodecContext());

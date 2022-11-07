@@ -78,6 +78,22 @@ AVCodecContext *AllocEncodecContext(AVCodecID codecId)
     }
     return codecContext;
 }
+AVCodecContext* AllocEncodecContext(const char* codecName)
+{
+    const AVCodec* codec = avcodec_find_encoder_by_name(codecName);
+    if (!codec)
+    {
+        av_log_error("codec not found\n");
+        return nullptr;
+    }
+    AVCodecContext* codecContext = avcodec_alloc_context3(codec);
+    if (!codecContext)
+    {
+        av_log_error("could not allocate codec context\n");
+        return nullptr;
+    }
+    return codecContext;
+}
 AVCodecContext *OpenDecodecContextByStream(AVStream *stream)
 {
     const AVCodec *codec = avcodec_find_decoder(stream->codecpar->codec_id);
@@ -99,6 +115,8 @@ AVCodecContext *OpenDecodecContextByStream(AVStream *stream)
         avcodec_free_context(&codecContext);
         return nullptr;
     }
+    codecContext->thread_count = 2;
+    codecContext->thread_type = FF_THREAD_SLICE;
     ret = avcodec_open2(codecContext, codec, nullptr);
     if (ret < 0)
     {

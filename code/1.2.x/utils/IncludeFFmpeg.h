@@ -2,6 +2,7 @@
 #define __STDC_CONSTANT_MACROS
 //#define CmdLog
 #define UnityLog
+//#define NoneLog
 extern "C"
 {
 #include <libavformat/avformat.h>
@@ -33,6 +34,12 @@ extern "C"
 #ifdef UnityLog
 #define av_log_error(str, ...) Debug::LogError(str, ##__VA_ARGS__)
 #define av_log_info(str, ...) Debug::Log(str, ##__VA_ARGS__)
+#define av_log_warning(str,...)
+#endif // UnityLog
+
+#ifdef NoneLog
+#define av_log_error(str, ...)
+#define av_log_info(str, ...)
 #define av_log_warning(str,...)
 #endif // UnityLog
 #define MONOLAYOUT { AV_CHANNEL_ORDER_NATIVE, (1), AV_CH_LAYOUT_MONO }

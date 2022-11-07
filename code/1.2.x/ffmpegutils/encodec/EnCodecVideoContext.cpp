@@ -1,9 +1,13 @@
 #include "EnCodecVideoContext.h"
 
-AVCodecContext* EnCodecVideoContext::OpenEncodecContext(AVCodecID enCodecid,int width,int height,int fps,float bitRatePercent)
+const std::string EnCodecVideoContext::presetLevels[9] = {"ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"};
+AVCodecContext* EnCodecVideoContext::OpenEncodecContext(AVCodecID enCodecid,int width,int height,int fps,float bitRatePercent, int crfMin, int crfMax, int presetLevel)
 {
     AVCodecContext* context = AllocEncodecContext(enCodecid);
-
+    if (context == nullptr) {
+        ret = -1;
+        return nullptr;
+    }
     if (enCodecid == AV_CODEC_ID_H264)
     {
         context->pix_fmt = AV_PIX_FMT_YUV420P;
@@ -25,11 +29,16 @@ AVCodecContext* EnCodecVideoContext::OpenEncodecContext(AVCodecID enCodecid,int 
     context->time_base.den = fps;
     context->thread_count = 4;
     context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    int64_t crf =  (1- bitRatePercent)* DEFAULTCRFMAXVALUE;
-    if (crf<0 || crf>DEFAULTCRFMAXVALUE) crf = 18;
+
+    int64_t crf = crfMin + (1 - bitRatePercent) * (crfMax - crfMin);
+    if (crf<0 || crf>DEFAULTCRFMAXVALUE) crf = 23;
+    av_log_info("crf interval:[%d,%d]",crfMin,crfMax);
+    av_log_info("bit rate percent from unity:%f,target crf:%ld\n", bitRatePercent, crf);
     av_opt_set_int(context->priv_data, "crf", crf, 0);
     //av_opt_set_int(context->priv_data, "qp", 18, 0);
-    av_opt_set(context->priv_data, "preset", "slow", 0);
+    if (presetLevel < 0 || presetLevel>8) presetLevel = 0;
+    //av_opt_set(context->priv_data, "preset", presetLevels[presetLevel].c_str(), 0);
+    av_log_info("presetlevel from unity:%d,the string is %s\n",presetLevel, presetLevels[presetLevel].c_str());
     const AVCodec* codec = avcodec_find_encoder(enCodecid);
     av_log_info("is opening video codec context\n");
     av_log_info("bit rate percent from unity:%f,target crf:%ld\n", bitRatePercent, crf);
@@ -66,9 +75,11 @@ EnCodecVideoContext::EnCodecVideoContext() :EnCodecContext()
 {
 }
 
-EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int height, int fps, float bitRatePercent):EnCodecContext()
+EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int height, int fps, 
+                                         float bitRatePercent, int crfMin, int crfMax, 
+                                         int presetLevel):EnCodecContext(),inFrameCount(0)
 {
-    codecCont = OpenEncodecContext(codecId,width,height,fps,bitRatePercent);
+    codecCont = OpenEncodecContext(codecId,width,height,fps,bitRatePercent,crfMin,crfMax,presetLevel);
     if (codecCont == nullptr) {
         av_log_error("error when open encodec context,video codeccontext initialize failed\n");
         goto end;
@@ -86,6 +97,7 @@ EnCodecVideoContext::EnCodecVideoContext(AVCodecID codecId, int width, int heigh
         goto end;
     }
     av_log_info("packet alloc success\n");
+    ret = 0;
     return;
 end:
     ret = -1;
@@ -110,12 +122,13 @@ bool EnCodecVideoContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* ou
         av_log_error("send frame to enVideoCodecContext error,ret:%d\n", ret);
         return false;
     }
+    ++inFrameCount;
     while (ret >= 0)
     {
         ret = avcodec_receive_packet(codecCont, packet);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
         {
-            av_log_error("eagain averror_eof %d\n", ret);
+            //av_log_info("eagain averror_eof %d,maybe encodecontext buffer has no enough frame data\n", ret);
             return false;
         }
 
@@ -141,6 +154,7 @@ bool EnCodecVideoContext::FlushBuffer(OutFormatContext& outFmtCont, AVStream* ou
     frame = nullptr;
     int result = EncodeFrame(outFmtCont, outStream);
     frame = tempFrame;
+    av_log_info("encode frame count:%d\n",inFrameCount);
     return result;
 }
 

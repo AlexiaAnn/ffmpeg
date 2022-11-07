@@ -1,12 +1,12 @@
 #pragma once
 #include "EnCodecContext.h"
-#include "OutFormatContext.h"
+#include "../OutFormatContext.h"
 #define DEFAULTAUDIOCODECID AV_CODEC_ID_MP3
 class EnCodecAudioContext :
     public EnCodecContext
 {
 private:
-    int maxNbSamples;
+    int maxNbSamples=0;
 protected:
     
     AVCodecContext* OpenEncodecContext(AVCodecID enCodecid);

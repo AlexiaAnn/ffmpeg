@@ -24,7 +24,7 @@ OutFormatContext::OutFormatContext():fmtCont(nullptr),ret(0)
 {
 }
 
-OutFormatContext::OutFormatContext(const char* dstFilePath, std::vector<std::pair<AVCodecContext*, AVStream*&>> codeContVector)
+OutFormatContext::OutFormatContext(const char* dstFilePath, std::vector<std::pair<AVCodecContext*, AVStream*&>> codeContVector):fmtCont(nullptr)
 {
 	fmtCont = AllocOutFormatContext(dstFilePath);
 	if (fmtCont == nullptr) {

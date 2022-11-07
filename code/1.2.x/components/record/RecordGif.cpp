@@ -1,8 +1,10 @@
 #include "RecordGif.h"
 
-RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height):ret(0),isFirstFrame(true)
+RecordGif::RecordGif(const char* dstFilepath, AVPixelFormat dePixfmt, int fps, 
+					 float bitRatePercent, int width, int height, 
+					 int presetLevel):ret(0),isFirstFrame(true),inFrameCount(0)
 {
-	enVideoCont = new EnCodecVideoContext(AV_CODEC_ID_GIF, width, height, fps, bitRatePercent);
+	enVideoCont = new EnCodecVideoContext(AV_CODEC_ID_GIF, width, height, fps, bitRatePercent,DEFAULTCRFMIN,DEFAULTCRFMAX,presetLevel);
 	if (enVideoCont->GetResult())goto end;
 	av_log_info("EnCodecVideoContext initialize success\n");
 	swsCont = new AVSwsContext(dePixfmt, width, height, DEFAULTGIFINPUTPIXFMT,width,height);
@@ -41,12 +43,14 @@ bool RecordGif::WriteGIFPreparition()
 
 bool RecordGif::WriteVideoToFile(void* data, int length)
 {
+	++inFrameCount;
 	if (isFirstFrame) {
 		isFirstFrame = false;
 		return false;
 	}
 	AVFrame* sinkFrame = nullptr;
 	FlipImage((unsigned char *)data, enVideoCont->GetAVCodecContext()->width, enVideoCont->GetAVCodecContext()->height);
+	if (deVideoFrame == nullptr) return false;
 	deVideoFrame->data[0] = (uint8_t*)data;
 	AVFrame* swsFrame = CreateVideoFrame(DEFAULTGIFINPUTPIXFMT,enVideoCont->GetAVCodecContext()->width,enVideoCont->GetAVCodecContext()->height);
 	if (swsCont->RescaleVideoFrame(deVideoFrame, swsFrame) == false)goto end;
@@ -69,6 +73,8 @@ bool RecordGif::FlushEnVideoCodecBuffer()
 		sinkFrame = filterCont->GetFrame();
 		enVideoCont->EncodeFrame(*outfmtCont, videoStream, sinkFrame);
 	} while (sinkFrame != nullptr);
+	enVideoCont->FlushBuffer(*outfmtCont,videoStream);
+	av_log_info("record gif frame count:%d\n",inFrameCount);
 	return true;
 }
 

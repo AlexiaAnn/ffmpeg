@@ -1,5 +1,5 @@
 #pragma once
-#include "util.h"
+#include "../utils/util.h"
 #define DEFAULTGIFINPUTPIXFMT AV_PIX_FMT_RGB565
 #define DEFAULTGIFPIXFMT AV_PIX_FMT_PAL8
 class FilterContext

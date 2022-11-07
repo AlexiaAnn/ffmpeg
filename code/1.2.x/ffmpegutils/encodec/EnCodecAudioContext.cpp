@@ -43,8 +43,10 @@ bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* ou
     while (ret >= 0)
     {
         ret = avcodec_receive_packet(codecCont, packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            av_log_info("eagain averror_eof %d,maybe encodecontext buffer has no enough frame data\n", ret);
             return false;
+        }
         else if (ret < 0)
         {
             av_log_error("Error encoding audio frame\n");
@@ -53,7 +55,7 @@ bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* ou
         av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
         packet->stream_index = outStream->index;
         av_interleaved_write_frame(fmtCont, packet);
-        av_log_info("write a packet to out formatcontext success\n");
+        //av_log_info("write a packet to out formatcontext success\n");
         av_packet_unref(packet);
         if (ret < 0)
             return false;

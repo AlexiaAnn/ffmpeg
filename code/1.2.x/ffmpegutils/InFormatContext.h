@@ -1,10 +1,10 @@
 #pragma once
-#include "util.h"
+#include "../utils/util.h"
 class InFormatContext {
 private:
-    AVFormatContext* inFmtContext;
-    AVPacket* dePacket;
-    int ret;
+    AVFormatContext* inFmtContext = nullptr;
+    AVPacket* dePacket = nullptr;
+    int ret=0;
 public:
     InFormatContext(const char* srcFilePath);
     ~InFormatContext();

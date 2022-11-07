@@ -1,17 +1,22 @@
 #include "RecordMp4.h"
 
-RecordMp4::RecordMp4(const char* dstFilepath, 
-	int sampleRate, AVSampleFormat sampleFmt, AVChannelLayout chLayout, 
-	AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height):ret(0),audioStream(nullptr),videoStream(nullptr)
+
+RecordMp4::RecordMp4(const char* dstFilepath,
+	int sampleRate, AVSampleFormat sampleFmt, AVChannelLayout chLayout,
+	AVPixelFormat dePixfmt, int fps, float bitRatePercent,
+	int width, int height, int crfMin, int crfMax, int presetLevel) :
+	ret(0), audioStream(nullptr), videoStream(nullptr), outfmtCont(nullptr),
+	enAudioCont(nullptr), swrCont(nullptr), enVideoCont(nullptr),
+	swsCont(nullptr), deVideoFrame(nullptr), deAudioFrame(nullptr)
 {
 	enAudioCont = new EnCodecAudioContext(DEFAULTAUDIOCODECID);
 	if (enAudioCont->GetResult()<0) goto end;
 	swrCont = new AVSwrContext(sampleRate, sampleFmt, chLayout,enAudioCont->GetAVCodecContext());
 	if (swrCont->GetResult()<0) goto end;
-	enVideoCont = new EnCodecVideoContext(DEFAULTVIDEOCODECID,width,height,fps,bitRatePercent);
-	if (enVideoCont->GetResult())goto end;
+	enVideoCont = new EnCodecVideoContext(DEFAULTVIDEOCODECID,width,height,fps,bitRatePercent,crfMin,crfMax,presetLevel);
+	if (enVideoCont->GetResult()<0)goto end;
 	swsCont = new AVSwsContext(dePixfmt,width,height,enVideoCont->GetAVCodecContext());
-	if (swsCont->GetResult()) goto end;
+	if (swsCont->GetResult()<0) goto end;
 	outfmtCont = new OutFormatContext(dstFilepath, { 
 		{enAudioCont->GetAVCodecContext(),audioStream},
 		{enVideoCont->GetAVCodecContext(),videoStream} });
@@ -43,6 +48,7 @@ bool RecordMp4::WriteAVPreparition()
 bool RecordMp4::WriteVideoToFile(void* data, int length)
 {
 	FlipImage((unsigned char*)data,enVideoCont->GetAVCodecContext()->width, enVideoCont->GetAVCodecContext()->height);
+	if (deVideoFrame == nullptr) return false;
 	deVideoFrame->data[0] = (uint8_t*)data;
 	swsCont->RescaleVideoFrame(deVideoFrame,*enVideoCont);
 	return enVideoCont->EncodeFrame(*outfmtCont,videoStream);
@@ -50,6 +56,7 @@ bool RecordMp4::WriteVideoToFile(void* data, int length)
 
 bool RecordMp4::WriteAudioToFile(void* data, int length)
 {
+	if (deAudioFrame == nullptr) return false;
 	deAudioFrame->data[0] = (uint8_t*)data;
 	deAudioFrame->data[1] = (uint8_t*)((float*)data + length);
 	deAudioFrame->nb_samples = length;

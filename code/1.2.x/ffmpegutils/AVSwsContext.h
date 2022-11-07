@@ -1,11 +1,11 @@
 #pragma once
-#include "util.h"
-#include "EnCodecVideoContext.h"
+#include "../utils/util.h"
+#include "encodec/EnCodecVideoContext.h"
 class AVSwsContext
 {
 private: 
-	SwsContext* swsCont;
-	int ret;
+	SwsContext* swsCont = nullptr;
+	int ret=0;
 public:
 	AVSwsContext(AVPixelFormat dePixFormat,int deWidth,int deHeight,AVPixelFormat enPixFormat,int enWidth,int enHeight);
 	AVSwsContext(AVCodecContext* deCodecont, AVPixelFormat enPixFormat, int enWidth, int enHeight);

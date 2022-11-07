@@ -64,6 +64,10 @@ bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, EnCodecVideoContext&
 		return false;
 	}
 	AVFrame* enVideoFrame = codeCont.GetEncodecFrame();
+	if (enVideoFrame == nullptr) {
+		av_log_warning("enframe is nullptr,cant to rescale\n");
+		return false;
+	}
 	ret = sws_scale(swsCont, deVideoFrame->data, deVideoFrame->linesize, 0,
 		deVideoFrame->height, enVideoFrame->data, enVideoFrame->linesize);
 	if (ret <= 0) {

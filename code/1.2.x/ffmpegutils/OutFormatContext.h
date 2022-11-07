@@ -1,11 +1,11 @@
 #pragma once
-#include "util.h"
+#include "../utils/util.h"
 #include <vector>
 class OutFormatContext
 {
 private:
-	AVFormatContext* fmtCont;
-	int ret;
+	AVFormatContext* fmtCont = nullptr;
+	int ret=0;
 private:
 	AVStream* AddNewStreamToFormat(AVFormatContext* fmtCont, AVCodecContext* codeCont);
 public:

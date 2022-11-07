@@ -18,13 +18,13 @@ AVFrame* SeekVideo::SeekFrameByPercent(float percent)
     if (targetFrameIndex < 0) return nullptr;
     if (targetFrameIndex == curFrameIndex) return swsVideoFrame;
     if (targetFrameIndex - curFrameIndex > 0 && targetFrameIndex - curFrameIndex < fps) {
-        av_log_info("cur_frame_index:%d,target_frame_index:%d,next frame\n", curFrameIndex, targetFrameIndex);
+        //av_log_info("cur_frame_index:%d,target_frame_index:%d,next frame\n", curFrameIndex, targetFrameIndex);
         while (targetFrameIndex > curFrameIndex) {
             if ((deFrame= GetNextFrame()) == nullptr)break;
         }
     }
     else {
-        av_log_info("cur_frame_index:%d,target_frame_index:%d,seek frame\n", curFrameIndex, targetFrameIndex);
+        //av_log_info("cur_frame_index:%d,target_frame_index:%d,seek frame\n", curFrameIndex, targetFrameIndex);
         SeekFrameByFrameIndex(targetFrameIndex);
         curFrameIndex = targetFrameIndex - 1;
         while (targetFrameIndex > curFrameIndex) {
@@ -80,18 +80,18 @@ SeekVideo::SeekVideo():inFmtCont(nullptr),deCodecont(nullptr),
 {
 }
 
-SeekVideo::SeekVideo(const char* srcFilePath):curFrameIndex(-1)
+SeekVideo::SeekVideo(const char* srcFilePath):curFrameIndex(-1),ret(0), frameNumber(0), fps(0)
 {
     inFmtCont = new InFormatContext(srcFilePath);
-    if (inFmtCont == nullptr) goto end;
+    if (inFmtCont->GetResult()<0) goto end;
     videoStream = inFmtCont->GetVideoStreamByWhile();
     if (videoStream == nullptr) goto end;
     deCodecont = new DeCodecContext(videoStream);
-    if (deCodecont == nullptr) goto end;
+    if (deCodecont->GetResult()<0) goto end;
     swsContPointer = new AVSwsContext(AV_PIX_FMT_YUV420P, GetVideoWidth(), GetVideoHeight(), AV_PIX_FMT_RGBA,GetVideoWidth(),GetVideoHeight());
-    if (swsContPointer == nullptr) goto end;
+    if (swsContPointer->GetResult()<0) goto end;
     swsVideoFrame = CreateVideoFrame(AV_PIX_FMT_RGBA,GetVideoWidth(),GetVideoHeight());
-    if (swsVideoFrame == nullptr) goto end;
+    if (swsVideoFrame==nullptr) goto end;
 
     if (videoStream->nb_frames <= 0) {
         frameNumber = av_rescale_q(inFmtCont->GetInFormatContext()->duration, 
@@ -128,7 +128,7 @@ float SeekVideo::GetDuration() const
 void SeekVideo::GetFrameDataByPercent(float percent, void* data, int length)
 {
     AVFrame* targetFrame = SeekFrameByPercent(percent);
-    av_log_info("curFrameIndex:%d\n", curFrameIndex);
+    //av_log_info("curFrameIndex:%d\n", curFrameIndex);
     if (targetFrame == nullptr) {
         av_log_error("cant find the target frame\n");
         return;
@@ -147,10 +147,11 @@ int SeekVideo::GetResult() const
 
 void SeekVideo::GetSomeInformation() const
 {
-    av_log_info("avg_frame_rate=>num:%d,den:%d\n",videoStream->avg_frame_rate.num, videoStream->avg_frame_rate.den);
+    /*av_log_info("avg_frame_rate=>num:%d,den:%d\n",videoStream->avg_frame_rate.num, videoStream->avg_frame_rate.den);
     av_log_info("avg fps:%d\n", videoStream->avg_frame_rate.num/videoStream->avg_frame_rate.den);
     av_log_info("r_frame_rate=>num:%d,den:%d\n", videoStream->r_frame_rate.num, videoStream->r_frame_rate.den);
-    av_log_info("r fps:%d\n", videoStream->r_frame_rate.num / videoStream->r_frame_rate.den);
+    av_log_info("r fps:%d\n", videoStream->r_frame_rate.num / videoStream->r_frame_rate.den);*/
+    while ((deCodecont->GetNextFrame(*inFmtCont)) != nullptr);
 }
 
 SeekVideo::~SeekVideo()

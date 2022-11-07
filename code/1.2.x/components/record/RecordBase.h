@@ -1,13 +1,13 @@
 #pragma once
-#include "AVSwsContext.h"
-#include "EnCodecVideoContext.h"
-#include "OutFormatContext.h"
+#include "../ffmpegutils/AVSwsContext.h"
+#include "../ffmpegutils/encodec/EnCodecVideoContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
 class RecordBase
 {
 private:
-	AVSwsContext* swsCont;
-	EnCodecVideoContext* enCodecont;
-	OutFormatContext* outFmtCont;
+	AVSwsContext* swsCont = nullptr;
+	EnCodecVideoContext* enCodecont = nullptr;
+	OutFormatContext* outFmtCont = nullptr;
 public:
 	RecordBase();
 };

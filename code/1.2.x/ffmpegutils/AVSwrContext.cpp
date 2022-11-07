@@ -52,6 +52,7 @@ AVSwrContext::AVSwrContext(int deSampleRate, AVSampleFormat deSampleFormat, AVCh
 		av_log_error("failed to initialize the resampling context\n");
 		return;
 	}
+	av_log_info("AVSwrContext initialize success\n");
 }
 
 AVSwrContext::AVSwrContext(AVCodecContext* deAudioCodecCont, 
@@ -73,6 +74,7 @@ AVSwrContext::AVSwrContext(AVCodecContext* deAudioCodecCont, AVCodecContext* enA
 			  AVSwrContext(deAudioCodecCont->sample_rate, deAudioCodecCont->sample_fmt, deAudioCodecCont->ch_layout,
 		                   enAudioCodecCont->sample_rate, enAudioCodecCont->sample_fmt, enAudioCodecCont->ch_layout)
 {
+
 }
 
 bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, AVFrame*& enFrame)
@@ -93,7 +95,7 @@ bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, AVFrame*& enFrame)
 	ret = swr_convert(swrCont, enFrame->data, dstNbSamples,
 		const_cast<const uint8_t**>(deFrame->data), deFrame->nb_samples);
 	enFrame->nb_samples = ret; // error prone
-	av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
+	//av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
 	if (ret < 0)
 	{
 		av_log_error("resample is failed\n");
@@ -111,6 +113,10 @@ bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, EnCodecAudioContext& cod
 	}
 
 	AVFrame* enFrame = codeCont.GetEncodecFrame();
+	if (enFrame == nullptr) {
+		av_log_warning("enframe is nullptr,cant to resample");
+		return false;
+	}
 	//get dst sample number aboud source frame to target frame
 	int64_t delay = swr_get_delay(swrCont, deFrame->sample_rate);
 	int dstNbSamples = av_rescale_rnd(delay + deFrame->nb_samples, enFrame->sample_rate,
@@ -124,7 +130,7 @@ bool AVSwrContext::ResampleAudioFrame(AVFrame* deFrame, EnCodecAudioContext& cod
 	ret = swr_convert(swrCont, enFrame->data, dstNbSamples,
 		const_cast<const uint8_t**>(deFrame->data), deFrame->nb_samples);
 	enFrame->nb_samples = ret;
-	av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
+	//av_log_info("resample success,EnAudio Frame sample number:%d\n", ret);
 	//whether resampling was successful
 	if (ret < 0)
 	{

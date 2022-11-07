@@ -39,7 +39,6 @@ void ExtractAudio::DoExtract()
 		av_log_error("Problem with initialization of ExtractAudio context,can`t extract audio\n");
 		return;
 	}
-	AVPacket* packet;
 	AVFrame* deFrame;
 	outFmtContPointer->WriteTofilePreparition();
 	while ((deFrame = deCodeContPointer->GetNextFrame(*inFmtContPointer))!=nullptr) {

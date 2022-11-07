@@ -1,6 +1,6 @@
 #include "ReadFileBase.h"
 
-ReadFileBase::ReadFileBase(const char* srcFilePath, AVMediaType mediaType)
+ReadFileBase::ReadFileBase(const char* srcFilePath, AVMediaType mediaType):ret(0)
 {
 	inFmtCont = new InFormatContext(srcFilePath);
 	if (inFmtCont->GetResult() < 0) goto end;
@@ -32,6 +32,7 @@ int ReadFileBase::GetResult() const
 
 ReadFileBase::~ReadFileBase()
 {
+	av_log_info("ReadFileBase deConstructor\n");
 	delete inFmtCont;
 	inFmtCont = nullptr;
 	delete deCodeCont;

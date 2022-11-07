@@ -3,10 +3,10 @@
 bool AudioWaveA::isNeedResample(AVSampleFormat format, int channelCount) const
 {
     if (channelCount == 1) {
-        if (format == AV_SAMPLE_FMT_FLT || format == AV_SAMPLE_FMT_FLTP) return true;
-        else return false;
+        if (format == AV_SAMPLE_FMT_FLT || format == AV_SAMPLE_FMT_FLTP) return false;
+        else return true;
     }
-    else return true;
+    else return false;
 }
 
 AudioWaveA::AudioWaveA(const char* srcFilePath):ReadFileBase(srcFilePath,AVMEDIA_TYPE_AUDIO),swrCont(nullptr),enAudioFrame(nullptr)
@@ -44,7 +44,7 @@ AudioWaveA::AudioWaveA(const char* srcFilePath):ReadFileBase(srcFilePath,AVMEDIA
 
 int AudioWaveA::GetMetaDataLength() const
 {
-    return DEFAULTPOINTNUMBER + 1;
+    return DEFAULTPOINTNUMBER;
 }
 
 float AudioWaveA::GetSecondsOfDuration() const
@@ -64,27 +64,30 @@ int AudioWaveA::GetAudioBitRate() const
 
 void AudioWaveA::GetMetaData(float* result)
 {
+
     AVFrame* frame = nullptr;
     int samples = int(GetSecondsOfDuration() * audioStream->codecpar->sample_rate);
     const int interval = samples / DEFAULTPOINTNUMBER;
     int i = 0;
     int resultIndex = 0;
-    while (frame = deCodeCont->GetNextFrame(*inFmtCont)) {
+    while ((frame = deCodeCont->GetNextFrame(*inFmtCont))!=nullptr) {
         if (swrCont != nullptr) {
             swrCont->ResampleAudioFrame(frame,enAudioFrame);
             frame = enAudioFrame;
         }
         float* data = (float*)frame->data[0];
-        for (; i < frame->nb_samples; i += interval, ++resultIndex) {
+        for (; i < frame->nb_samples&&resultIndex<GetMetaDataLength(); i += interval, ++resultIndex) {
             *(result + resultIndex) = *(data + i);
         }
+        if (resultIndex >= GetMetaDataLength())break;
         i -= frame->nb_samples;
-        *(result + DEFAULTPOINTNUMBER) = *(data + frame->nb_samples - 1);
     }
 }
 
 void AudioWaveA::GetAudioInformation()
 {
     //todo
-    av_log_warning("function is not be implemented\n");
+    float* data = new float[GetMetaDataLength()];
+    GetMetaData(data);
+    delete[] data;
 }

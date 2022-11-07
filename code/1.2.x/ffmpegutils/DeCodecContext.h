@@ -1,12 +1,12 @@
 #pragma once
-#include "util.h"
+#include "../utils/util.h"
 #include "InFormatContext.h"
 class DeCodecContext {
 private:
-    AVCodecContext* codecCont;
-    AVFrame* deFrame;
-    int streamIndex;
-    int ret;
+    AVCodecContext* codecCont = nullptr;
+    AVFrame* deFrame = nullptr;
+    int streamIndex = 0;
+    int ret =0;
 public:
     DeCodecContext(AVStream* stream);
     AVFrame* GetReceiveFrame();

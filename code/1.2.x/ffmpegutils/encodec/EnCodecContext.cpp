@@ -7,7 +7,7 @@ EnCodecContext::EnCodecContext():codecCont(nullptr),frame(nullptr),packet(nullpt
 
 int EnCodecContext::GetResult() const
 {
-	return 0;
+	return ret;
 }
 
 AVCodecContext* EnCodecContext::GetAVCodecContext() const

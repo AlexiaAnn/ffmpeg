@@ -12,7 +12,7 @@ VideoToGif::VideoToGif(const char* srcFilePath, const char* dstFilePath):pts(0),
 										deCodeCont->GetCodecContext()->width,
 										deCodeCont->GetCodecContext()->height,
 										25,
-										0.2);
+										0.2,DEFAULTCRFMIN,DEFAULTCRFMAX,0);
 	if (enCodeCont->GetResult()<0) goto end;
 	swsCont = new AVSwsContext(deCodeCont->GetCodecContext(),DEFAULTGIFINPUTPIXFMT, deCodeCont->GetCodecContext()->width, deCodeCont->GetCodecContext()->height);
 	if (swsCont->GetResult()<0) goto end;

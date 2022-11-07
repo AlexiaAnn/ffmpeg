@@ -1,23 +1,24 @@
 #pragma once
-#include "AVSwsContext.h"
-#include "EnCodecVideoContext.h"
-#include "OutFormatContext.h"
-#include "FilterContext.h"
+#include "../ffmpegutils/AVSwsContext.h"
+#include "../ffmpegutils/encodec/EnCodecVideoContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
+#include "../ffmpegutils/FilterContext.h"
 class RecordGif
 {
 private:
-	AVSwsContext* swsCont;
-	EnCodecVideoContext* enVideoCont;
-	OutFormatContext* outfmtCont;
-	FilterContext* filterCont;
-	AVStream* videoStream;
-	AVFrame* deVideoFrame;
-	bool isFirstFrame;
-	int pts;
-	int ret;
+	AVSwsContext* swsCont = nullptr;
+	EnCodecVideoContext* enVideoCont = nullptr;
+	OutFormatContext* outfmtCont = nullptr;
+	FilterContext* filterCont = nullptr;
+	AVStream* videoStream = nullptr;
+	AVFrame* deVideoFrame = nullptr;
+	bool isFirstFrame=true;
+	int pts=0;
+	int ret=0;
+	int inFrameCount=0;
 public:
 	RecordGif(const char* dstFilepath,
-			  AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height);
+			  AVPixelFormat dePixfmt, int fps, float bitRatePercent, int width, int height, int presetLevel);
 	int GetResult() const;
 	bool WriteGIFPreparition();
 	bool WriteVideoToFile(void* data, int length);

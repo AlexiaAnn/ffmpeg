@@ -1,11 +1,11 @@
 #pragma once
-#include "util.h"
-#include "EnCodecAudioContext.h"
+#include "../utils/util.h"
+#include "encodec/EnCodecAudioContext.h"
 class AVSwrContext
 {
 private:
-	SwrContext* swrCont;
-	int ret;
+	SwrContext* swrCont = nullptr;
+	int ret=0;
 private:
 	void ReAllocFrame(AVFrame* &frame,int dstNbSamples);
 public:

@@ -1,11 +1,11 @@
 #pragma once
-#include "InFormatContext.h"
-#include "OutFormatContext.h"
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
 class ExtractBase
 {
 protected:
-	InFormatContext* inFmtContPointer;
-	OutFormatContext* outFmtContPointer;
+	InFormatContext* inFmtContPointer=nullptr;
+	OutFormatContext* outFmtContPointer=nullptr;
 	int ret;
 public:
 	ExtractBase();

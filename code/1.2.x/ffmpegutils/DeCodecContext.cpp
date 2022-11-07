@@ -22,14 +22,14 @@ AVFrame* DeCodecContext::GetReceiveFrame() {
     av_frame_unref(deFrame);//error prone
     ret = avcodec_receive_frame(codecCont, deFrame);
     if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
-        av_log_warning("there are no enough frame data in buffer\n");
+        //av_log_warning("there are no enough frame data in buffer\n");
         return nullptr;
     }
     if (ret < 0) {
         av_log_error("error during decoding\n");
         return nullptr;
     }
-    
+    //av_log_info("receive a frame\n");
     return deFrame;
 }
 AVFrame* DeCodecContext::GetNextFrame(InFormatContext& infmtCont)
@@ -57,7 +57,7 @@ AVFrame* DeCodecContext::GetNextFrame(InFormatContext& infmtCont)
 bool DeCodecContext::SendPacket(AVPacket* packet)
 {
     if (packet->stream_index != streamIndex) {
-        av_log_error("packet stream index != target stream index");
+        //av_log_error("packet stream index != target stream index");
         return false;
     }
     ret = avcodec_send_packet(codecCont,packet);
@@ -65,6 +65,7 @@ bool DeCodecContext::SendPacket(AVPacket* packet)
         av_log_error("Error submitting a packet for deconding\n");
         return false;
     }
+    //av_log_info("send a packet to decodec context,success\n");
     return true;
 }
 AVCodecContext* DeCodecContext::GetCodecContext() const
