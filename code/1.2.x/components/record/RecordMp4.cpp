@@ -33,7 +33,13 @@ RecordMp4::RecordMp4(const char *dstFilepath,
 #endif
 	if (enVideoCont->GetResult() < 0)
 		goto end;
+#ifdef WINDOWS
 	swsCont = new AVSwsContext(dePixfmt, width, height, enVideoCont->GetAVCodecContext());
+#endif
+#ifdef ANDROID
+	av_log_info("LibyuvSwsContext");
+	swsCont = new LibyuvSwsContext();
+#endif
 	if (swsCont->GetResult() < 0)
 		goto end;
 	outfmtCont = new OutFormatContext(dstFilepath, {{enAudioCont->GetAVCodecContext(), audioStream},
@@ -73,27 +79,28 @@ bool RecordMp4::WriteVideoToFile(void *data, int length)
 		return false;
 
 	//测试屏蔽转码后的速度
-	if (iFrameCount == 0)
-	{
-		av_log_info("first frame rescale,test...");
-		iFrameCount++;
-		deVideoFrame->data[0] = (uint8_t *)data;
-		swsCont->RescaleVideoFrame(deVideoFrame, *enVideoCont);
-		return true;
-	}
-	else
-	{
-		iFrameCount++;
-		start = clock();
-		bool result = enVideoCont->EncodeFrame(*outfmtCont, videoStream);
-		end = clock();
-		float encodeDuration = float(end - start) / CLOCKS_PER_SEC;
-		encodeDurationAvg += encodeDuration;
-		allDurationAvg += encodeDuration;
-		return result;
-	}
+	// if (iFrameCount == 0)
+	// {
+	// 	av_log_info("first frame rescale,test...");
+	// 	iFrameCount++;
+	// 	deVideoFrame->data[0] = (uint8_t *)data;
+	// 	swsCont->RescaleVideoFrame(deVideoFrame, *enVideoCont);
+	// 	return true;
+	// }
+	// else
+	// {
+	// 	iFrameCount++;
+	// 	start = clock();
+	// 	bool result = enVideoCont->EncodeFrame(*outfmtCont, videoStream);
+	// 	end = clock();
+	// 	float encodeDuration = float(end - start) / CLOCKS_PER_SEC;
+	// 	encodeDurationAvg += encodeDuration;
+	// 	allDurationAvg += encodeDuration;
+	// 	return result;
+	// }
 
-	// float duration = 0;
+	iFrameCount++;
+	float duration = 0;
 
 	// start = clock();
 	// FlipImage((unsigned char *)data, enVideoCont->GetAVCodecContext()->width, enVideoCont->GetAVCodecContext()->height);
@@ -102,24 +109,24 @@ bool RecordMp4::WriteVideoToFile(void *data, int length)
 	// flipDurationAvg += duration;
 	// allDurationAvg += duration;
 
-	// deVideoFrame->data[0] = (uint8_t *)data;
+	deVideoFrame->data[0] = (uint8_t *)data;
 
-	// start = clock();
-	// swsCont->RescaleVideoFrame(deVideoFrame, *enVideoCont);
-	// end = clock();
-	// float rescaleDuration = float(end - start) / CLOCKS_PER_SEC;
-	// rescaleDurationAvg += rescaleDuration;
-	// allDurationAvg += rescaleDuration;
+	start = clock();
+	swsCont->RescaleVideoFrame(deVideoFrame, *enVideoCont);
+	end = clock();
+	float rescaleDuration = float(end - start) / CLOCKS_PER_SEC;
+	rescaleDurationAvg += rescaleDuration;
+	allDurationAvg += rescaleDuration;
 
-	// start = clock();
-	// bool result = enVideoCont->EncodeFrame(*outfmtCont, videoStream);
-	// end = clock();
-	// float encodeDuration = float(end - start) / CLOCKS_PER_SEC;
-	// encodeDurationAvg += encodeDuration;
-	// allDurationAvg += encodeDuration;
-	// // av_log_info("video frame duration:[flip:%f],[rescale:%f],[encode:%f],frame index:%d",
-	// // 			duration, rescaleDuration, encodeDuration, iFrameCount);
-	// return result;
+	start = clock();
+	bool result = enVideoCont->EncodeFrame(*outfmtCont, videoStream);
+	end = clock();
+	float encodeDuration = float(end - start) / CLOCKS_PER_SEC;
+	encodeDurationAvg += encodeDuration;
+	allDurationAvg += encodeDuration;
+	// av_log_info("video frame duration:[flip:%f],[rescale:%f],[encode:%f],frame index:%d",
+	// 			duration, rescaleDuration, encodeDuration, iFrameCount);
+	return result;
 }
 
 bool RecordMp4::WriteAudioToFile(void *data, int length)

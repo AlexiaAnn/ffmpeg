@@ -1,7 +1,7 @@
 #pragma once
 #include "ffmpegutils/InFormatContext.h"
 #include "ffmpegutils/DeCodecContext.h"
-#include "ffmpegutils/AVSwsContext.h"
+#include "ffmpegutils/SwsContext/AVSwsContext.h"
 class SeekVideo
 {
 private:

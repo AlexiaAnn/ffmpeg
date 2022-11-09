@@ -124,7 +124,7 @@ Declspec void StdDll FlushVideoBuffer()
         videoFrameAllTime += float(videoFrameEnd - videoFrameStart) / CLOCKS_PER_SEC;
         av_log_info("flush videoCodecBuffer success");
         av_log_info("video frame:[count:%d],[alltime:%f],[alltime avg:%f]",
-                    iVideoFrameCount, videoFrameAllTime, videoFrameAllTime / iVideoFrameCount);
+                    iVideoFrameCount, iVideoFrameCount, videoFrameAllTime / iVideoFrameCount);
         iVideoFrameCount = 0;
         videoFrameAllTime = 0;
     }

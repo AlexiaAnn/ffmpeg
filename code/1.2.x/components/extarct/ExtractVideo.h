@@ -1,7 +1,7 @@
 #pragma once
 #include "ExtractBase.h"
 #include "ffmpegutils/DeCodecContext.h"
-#include "ffmpegutils/AVSwsContext.h"
+#include "ffmpegutils/SwsContext/AVSwsContext.h"
 #include "ffmpegutils/encodec/EnCodecVideoContext.h"
 class ExtractVideo : public ExtractBase
 {

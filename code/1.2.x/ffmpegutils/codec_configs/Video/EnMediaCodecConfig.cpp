@@ -26,7 +26,7 @@ AVCodecContext *EnMediaCodecConfig::GetContext()
     int bitRateMin = width * height;
     int bitRateMax = width * height * 4;
     int bitRate = bitRateMin + (bitRateMax - bitRateMin) * bitRatePercent;
-    context->bit_rate = 27000000;
+    context->bit_rate = bitRate;
     av_log_info("unity bitratepercent:%f,mediacodec encoder bitrate:%d", bitRatePercent, bitRate);
     const AVCodec *codec = avcodec_find_encoder_by_name(encodeNames[int(encodeName)].c_str());
     int ret = avcodec_open2(context, codec, nullptr);

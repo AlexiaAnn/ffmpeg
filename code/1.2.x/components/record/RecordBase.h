@@ -1,5 +1,5 @@
 #pragma once
-#include "ffmpegutils/AVSwsContext.h"
+#include "ffmpegutils/SwsContext/AVSwsContext.h"
 #include "ffmpegutils/encodec/EnCodecVideoContext.h"
 #include "ffmpegutils/OutFormatContext.h"
 class RecordBase

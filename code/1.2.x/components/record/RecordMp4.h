@@ -1,9 +1,11 @@
 #pragma once
-#include "ffmpegutils/AVSwsContext.h"
+#include "ffmpegutils/SwsContext/AVSwsContext.h"
 #include "ffmpegutils/AVSwrContext.h"
 #include "ffmpegutils/encodec/EnCodecAudioContext.h"
 #include "ffmpegutils/encodec/EnCodecVideoContext.h"
 #include "ffmpegutils/OutFormatContext.h"
+#include "ffmpegutils/SwsContext/SwsContextBase.h"
+#include "ffmpegutils/SwsContext/LibyuvSwsContext.h"
 #include <mutex>
 #define DEFAULTAUDIOCODECID AV_CODEC_ID_MP3
 #define DEFAULTVIDEOCODECID AV_CODEC_ID_H264
@@ -11,7 +13,7 @@
 class RecordMp4
 {
 private:
-	AVSwsContext *swsCont = nullptr;
+	SwsContextBase *swsCont = nullptr;
 	AVSwrContext *swrCont = nullptr;
 	EnCodecAudioContext *enAudioCont = nullptr;
 	EnCodecVideoContext *enVideoCont = nullptr;
