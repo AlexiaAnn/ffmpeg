@@ -1,20 +1,19 @@
 #include "ExtractBase.h"
 
-ExtractBase::ExtractBase():ret(-1)
+ExtractBase::ExtractBase() : ret(-1)
 {
-
 }
 
-ExtractBase::ExtractBase(const char* srcFilePath):ret(0)
+ExtractBase::ExtractBase(const char *srcFilePath) : ret(0)
 {
 	inFmtContPointer = new InFormatContext(srcFilePath);
-	if (inFmtContPointer->GetResult() < 0) {
+	if (inFmtContPointer->GetResult() < 0)
+	{
 		ret = -1;
 		av_log_error("InFormatContext initialize failed\n");
 		return;
 	}
 }
-
 
 int ExtractBase::GetResult() const
 {

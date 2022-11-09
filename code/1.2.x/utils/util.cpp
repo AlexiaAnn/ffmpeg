@@ -102,6 +102,7 @@ AVCodecContext *OpenDecodecContextByStream(AVStream *stream)
         av_log_error("failed to find target codec\n");
         return nullptr;
     }
+    av_log_info("audio decoder name:%s",codec->name);
     AVCodecContext *codecContext = avcodec_alloc_context3(codec);
     if (!codecContext)
     {
@@ -115,8 +116,42 @@ AVCodecContext *OpenDecodecContextByStream(AVStream *stream)
         avcodec_free_context(&codecContext);
         return nullptr;
     }
-    codecContext->thread_count = 2;
-    codecContext->thread_type = FF_THREAD_SLICE;
+    //codecContext->thread_count = 2;
+    //codecContext->thread_type = FF_THREAD_SLICE;
+    ret = avcodec_open2(codecContext, codec, nullptr);
+    if (ret < 0)
+    {
+        av_log_error("failed to init codec context\n");
+        avcodec_free_context(&codecContext);
+        return nullptr;
+    }
+    return codecContext;
+}
+
+AVCodecContext* OpenDecodecContextByStream(const char* codecName,AVStream* stream)
+{
+    const AVCodec* codec = avcodec_find_decoder_by_name(codecName);
+    if (!codec)
+    {
+        av_log_error("failed to find target codec\n");
+        return nullptr;
+    }
+    av_log_info("audio decoder name:%s", codec->name);
+    AVCodecContext* codecContext = avcodec_alloc_context3(codec);
+    if (!codecContext)
+    {
+        av_log_error("failed to allocate target codec context\n");
+        return codecContext;
+    }
+    int ret = avcodec_parameters_to_context(codecContext, stream->codecpar);
+    if (ret < 0)
+    {
+        av_log_error("failed to copy codecpar to codec context");
+        avcodec_free_context(&codecContext);
+        return nullptr;
+    }
+    //codecContext->thread_count = 2;
+    //codecContext->thread_type = FF_THREAD_SLICE;
     ret = avcodec_open2(codecContext, codec, nullptr);
     if (ret < 0)
     {

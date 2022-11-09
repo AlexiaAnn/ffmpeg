@@ -1,9 +1,10 @@
 #include "ReadFileBase.h"
 
-ReadFileBase::ReadFileBase(const char* srcFilePath, AVMediaType mediaType):ret(0)
+ReadFileBase::ReadFileBase(const char *srcFilePath, AVMediaType mediaType) : ret(0)
 {
 	inFmtCont = new InFormatContext(srcFilePath);
-	if (inFmtCont->GetResult() < 0) goto end;
+	if (inFmtCont->GetResult() < 0)
+		goto end;
 	switch (mediaType)
 	{
 	case AVMEDIA_TYPE_VIDEO:
@@ -17,7 +18,9 @@ ReadFileBase::ReadFileBase(const char* srcFilePath, AVMediaType mediaType):ret(0
 		goto end;
 		break;
 	}
-	if (deCodeCont->GetResult() < 0) goto end;
+	if (deCodeCont->GetResult() < 0)
+		goto end;
+	ret = 0;
 	return;
 end:
 	ret = -1;

@@ -44,7 +44,7 @@ bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* ou
     {
         ret = avcodec_receive_packet(codecCont, packet);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            av_log_info("eagain averror_eof %d,maybe encodecontext buffer has no enough frame data\n", ret);
+            av_log_pframe("eagain averror_eof %d,maybe encodecontext buffer has no enough frame data\n", ret);
             return false;
         }
         else if (ret < 0)
@@ -55,7 +55,7 @@ bool EnCodecAudioContext::EncodeFrame(OutFormatContext& outFmtCont, AVStream* ou
         av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
         packet->stream_index = outStream->index;
         av_interleaved_write_frame(fmtCont, packet);
-        //av_log_info("write a packet to out formatcontext success\n");
+        //av_log_pframe("write a packet to out formatcontext success\n");
         av_packet_unref(packet);
         if (ret < 0)
             return false;
@@ -127,7 +127,14 @@ EnCodecAudioContext::EnCodecAudioContext() :EnCodecContext(),maxNbSamples(0)
 
 EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):maxNbSamples(0)
 {
-    codecCont = OpenEncodecContext(codecId);
+#ifdef WINDOWS
+    codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3MF);
+#endif // WINDOWS
+#ifdef ANDROID
+    codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3LAME);
+#endif // ANDROID
+
+
     if (codecCont == nullptr) {
         av_log_error("error when open encodec context,audio codeccontext initialize failed\n");
         goto end;
@@ -142,6 +149,7 @@ EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):maxNbSamples(0)
         av_log_error("error when allocing packet,audio codeccontext initialize failed\n");
         goto end;
     }
+    ret = 0;
     return;
 end:
     ret = -1;

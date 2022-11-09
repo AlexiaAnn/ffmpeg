@@ -8,6 +8,7 @@ int AddNewStreamToFormat(AVFormatContext* outFormatContext, AVCodecContext* code
 AVCodecContext* AllocEncodecContext(AVCodecID codecId);
 AVCodecContext* AllocEncodecContext(const char* codecName);
 AVCodecContext* OpenDecodecContextByStream(AVStream* stream);
+AVCodecContext* OpenDecodecContextByStream(const char* codecName,AVStream* stream);
 const char* GetSampleFormatString(AVSampleFormat format);
 AVFilterInOut* AllocAVFilterInOut();
 AVFilterGraph* AllocAVFilterGraph();

@@ -10,11 +10,12 @@ Declspec void StdDll Mp4ToMp3(char *srcFileName, char *dstFileName)
 }
 Declspec void StdDll InitCSharpDelegate(void (*Log)(char *message, int iSize), void (*LogError)(char *message, int iSize), bool isNeedFFmpegLog)
 {
-    if(isNeedFFmpegLog)av_log_set_callback(UnityLogCallbackFunc);
+    if (isNeedFFmpegLog)
+        av_log_set_callback(UnityLogCallbackFunc);
     Debug::LogFunPtr = Log;
     Debug::LogErrorFunPtr = LogError;
     av_log_info("Cpp Message:Log has initialized");
-    av_log_info("ffmpeg version:%s,ffmpeg2 date:%s", "5.10", "2022.11.7");
+    av_log_info("ffmpeg version:%s,ffmpeg2 date:%s", "5.10", "2022.11.8");
 }
 
 Declspec bool StdDll RecordAVStart(const char *dstFilePath, int sampleRate, int channelCount,
@@ -74,9 +75,15 @@ Declspec void StdDll WriteVideoFrame(void *dataPtr)
     }
     try
     {
+        iVideoFrameCount++;
         // vaContext->Flip((unsigned char*)dataPtr);
+        videoFrameStart = clock();
         vaContext->WriteVideoToFile(dataPtr, 0);
-        av_log_info("write a video frame success");
+        videoFrameEnd = clock();
+        float duration = float(videoFrameEnd - videoFrameStart) / CLOCKS_PER_SEC;
+        videoFrameAllTime += duration;
+        // av_log_info("write a video frame duration:%f", duration);
+        av_log_pframe("write a video frame success");
     }
     catch (const std::exception &e)
     {
@@ -94,7 +101,7 @@ Declspec void StdDll WriteAudioFrame(void *dataPtr, int length)
     try
     {
         vaContext->WriteAudioToFile(dataPtr, length);
-        av_log_info("write a audio frame success");
+        av_log_pframe("write a audio frame success");
     }
     catch (const std::exception &e)
     {
@@ -111,8 +118,15 @@ Declspec void StdDll FlushVideoBuffer()
     }
     try
     {
+        videoFrameStart = clock();
         vaContext->FlushEnVideoCodecBuffer();
+        videoFrameEnd = clock();
+        videoFrameAllTime += float(videoFrameEnd - videoFrameStart) / CLOCKS_PER_SEC;
         av_log_info("flush videoCodecBuffer success");
+        av_log_info("video frame:[count:%d],[alltime:%f],[alltime avg:%f]",
+                    iVideoFrameCount, videoFrameAllTime, videoFrameAllTime / iVideoFrameCount);
+        iVideoFrameCount = 0;
+        videoFrameAllTime = 0;
     }
     catch (const std::exception &e)
     {
@@ -152,7 +166,7 @@ Declspec int StdDll InitAudioWaveContext(char *srcFilePath)
     {
         delete audioWave;
         audioWave = nullptr;
-        av_log_info("initing audio wave failed\n");
+        av_log_error("initing audio wave failed\n");
         return -1;
     }
     int result = audioWaves.PushPointerAndGetid(audioWave);
@@ -233,9 +247,9 @@ Declspec double StdDll GetSeekDurationSeconds(int id)
 Declspec void StdDll SeekVideoFrameByPercent(float percent, void *data, int length, int id)
 {
     ID_CHECK_NORETURE
-    av_log_info("seek video frame start");
+    av_log_pframe("seek video frame start");
     seekCpts.GetPointerById(id)->GetFrameDataByPercent(percent, data, length);
-    av_log_info("seek video frame end");
+    av_log_pframe("seek video frame end");
 }
 Declspec void StdDll DestroySeekComponent(int id)
 {
@@ -290,7 +304,7 @@ Declspec void StdDll WriteGifFrame(void *dataPtr)
     {
         // recordGif->Flip((unsigned char*)dataPtr);
         recordGif->WriteVideoToFile(dataPtr, 0);
-        av_log_info("write a video frame success");
+        av_log_pframe("write a video frame success");
     }
     catch (const std::exception &e)
     {
