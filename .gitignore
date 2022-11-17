@@ -1,6 +1,6 @@
-code/1.2.x/ffmpeg2
-code/1.2.x/.vs
-code/1.2.x/.vscode
-code/1.2.x/Debug
-code/1.2.1/x64
-code/1.2.1/*.sln
+code/1.2.x/ffmpeg2/*
+code/1.2.x/.vs/*
+code/1.2.x/.vscode/*
+code/1.2.x/Debug/*
+code/1.2.x/x64/*
+code/1.2.x/*.sln
