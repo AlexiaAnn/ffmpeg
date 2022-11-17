@@ -102,6 +102,8 @@ int OutFormatContext::GetResult() const
 
 OutFormatContext::~OutFormatContext()
 {
+    av_log_info("%s start", __FUNCTION__);
     avformat_free_context(fmtCont);
     fmtCont = nullptr;
+    av_log_info("%s end", __FUNCTION__);
 }

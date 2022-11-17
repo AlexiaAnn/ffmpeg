@@ -158,13 +158,16 @@ bool EnCodecVideoContext::EncodeFrame(OutFormatContext &outFmtCont, AVStream *ou
         enFrame->pts = pts;
         pts += 1;
     }
+    start = clock();
     ret = avcodec_send_frame(codecCont, enFrame);
+    end = clock();
     if (ret < 0)
     {
         av_log_error("send frame to enVideoCodecContext error,ret:%d\n", ret);
         return false;
     }
     ++inFrameCount;
+    codeTime += float(end - start) / CLOCKS_PER_SEC;
     while (ret >= 0)
     {
         ret = avcodec_receive_packet(codecCont, packet);
@@ -181,7 +184,10 @@ bool EnCodecVideoContext::EncodeFrame(OutFormatContext &outFmtCont, AVStream *ou
         }
         av_packet_rescale_ts(packet, codecCont->time_base, outStream->time_base);
         packet->stream_index = outStream->index;
+        start = clock();
         av_interleaved_write_frame(outFmtCont.GetFormatContext(), packet);
+        end = clock();
+        writePktTime += float(end - start) / CLOCKS_PER_SEC;
         av_packet_unref(packet);
         if (ret < 0)
             return false;
@@ -204,8 +210,18 @@ AVFrame *EnCodecVideoContext::GetEncodecFrame() const
     return frame;
 }
 
+void EnCodecVideoContext::GetTimeInfo() const
+{
+    av_log_info("test time=>[code time:%fs,avg:%fs],[write packet time:%fs,avg:%fs]",
+                codeTime,codeTime/inFrameCount,
+                writePktTime,writePktTime/inFrameCount);
+}
+
 EnCodecVideoContext::~EnCodecVideoContext()
 {
+    
+    av_log_info("%s start", __FUNCTION__);
     av_frame_free(&frame);
     av_packet_free(&packet);
+    av_log_info("%s end", __FUNCTION__);
 }

@@ -1,6 +1,13 @@
 #pragma once
-#include "ReadFileBase.h"
+#ifdef WINDOWS
+#include "../ffmpegutils/AVSwrContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ffmpegutils/AVSwrContext.h"
+#endif // ANDROID
+#include "ReadFileBase.h"
+
 #include <thread>
 #define DEFAULTPOINTNUMBER 4000
 #define INPUT_SAMPLERATE 44100

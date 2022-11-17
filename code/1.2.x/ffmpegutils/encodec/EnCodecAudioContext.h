@@ -1,7 +1,12 @@
 #pragma once
 #include "EnCodecContext.h"
-#include "ffmpegutils/OutFormatContext.h"
+#ifdef WINDOWS
+#include "../ffmpegutils/codec_configs/CodecConfigManager.h"
+#endif // WINDOWS
+#ifdef ANDROID
 #include "ffmpegutils/codec_configs/CodecConfigManager.h"
+#endif // ANDROID
+
 /*#include "ffmpegutils/OutFormatContext.h"
 #include "ffmpegutils/codec_configs/CodecConfigManager.h"*/
 #define DEFAULTAUDIOCODECID AV_CODEC_ID_MP3

@@ -1,4 +1,10 @@
 #pragma once
+#ifdef WINDOWS
+
+#endif // WINDOWS
+#ifdef ANDROID
+
+#endif // ANDROID
 #include "VideoEnCodecConfigBase.h"
 class EnMediaCodecConfig : public VideoEnCodecConfigBase
 {

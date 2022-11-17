@@ -1,5 +1,11 @@
 #pragma once
+#ifdef WINDOWS
+#include "../utils/util.h"
+#endif // WINDOWS
+#ifdef ANDROID
 #include "utils/util.h"
+#endif // ANDROID
+
 enum AudioEncodeName
 {
 	LIBMP3LAME = 0,

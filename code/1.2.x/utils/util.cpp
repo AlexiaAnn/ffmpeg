@@ -252,6 +252,28 @@ void FlipImage(unsigned char* src,int width,int height)
     free(tempSrc);
 }
 
+void FlipImage(uint8_t* data, int width, int height, int channel)
+{
+    int cx = width / 2;
+    int cy = height / 2;
+    uint8_t* front = NULL;
+    uint8_t* back = NULL;
+    uint8_t d;
+    front = data;
+    for (int i = 0; i < cy; i++) {
+        back = data + (width * (height - i - 1) * channel);
+        for (int j = 0; j < width; j++) {
+            for (int c = 0; c < channel; c++) {
+                d = *front;
+                *front = *back;
+                *back = d;
+                front++;
+                back++;
+            }
+        }
+    }
+}
+
 AVPixelFormat GetPixFormatByCodecId(AVCodecID codecId)
 {
     switch (codecId)

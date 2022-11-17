@@ -1,6 +1,16 @@
 #pragma once
+#ifdef WINDOWS
+
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
+
 #include "ffmpegutils/InFormatContext.h"
 #include "ffmpegutils/OutFormatContext.h"
+#endif // ANDROID
+
 class ExtractBase
 {
 protected:

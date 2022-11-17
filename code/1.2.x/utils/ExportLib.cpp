@@ -15,7 +15,7 @@ Declspec void StdDll InitCSharpDelegate(void (*Log)(char *message, int iSize), v
     Debug::LogFunPtr = Log;
     Debug::LogErrorFunPtr = LogError;
     av_log_info("Cpp Message:Log has initialized");
-    av_log_info("ffmpeg version:%s,ffmpeg2 date:%s", "5.10", "2022.11.8");
+    av_log_info("ffmpeg version:%s,ffmpeg2 date:%s", "5.10", "2022.11.16");
 }
 
 Declspec bool StdDll RecordAVStart(const char *dstFilePath, int sampleRate, int channelCount,
@@ -347,5 +347,207 @@ Declspec void StdDll RecordGifEnd()
         av_log_error("record end failed,%s", e.what());
     }
     recordGif = nullptr;
+    av_log_info("context delete,record end");
+}
+
+Declspec int StdDll HeifStart(const char* srcPath)
+{
+    ReadHeif* pointer = nullptr;
+    std::thread mThread([&pointer,&srcPath]() {
+        pointer = new ReadHeif(srcPath);
+        });
+    mThread.join();
+    if (pointer->GetResult() < 0) {
+        delete pointer;
+        pointer = nullptr;
+        av_log_error("ReadHeif context initialize failed");
+        return -1;
+    }
+    int result = heifCpts.PushPointerAndGetid(pointer);
+    av_log_info("ReadHeif context initialize success");
+    return result;
+}
+
+Declspec int StdDll HeifImageWidth(int id)
+{
+    ID_CHECK_RETUREZERO
+        return heifCpts.GetPointerById(id)->GetWidth();
+}
+
+Declspec int StdDll HeifImageHeight(int id)
+{
+    ID_CHECK_RETUREZERO
+        return heifCpts.GetPointerById(id)->GetHeight();
+}
+
+Declspec void StdDll HeifToRgb(void* data, int id)
+{
+    ID_CHECK_NORETURE
+        heifCpts.GetPointerById(id)->ConverHeifToRgb(data);
+}
+
+Declspec void StdDll DestroyHeifPointer(int id)
+{
+    ID_CHECK_NORETURE
+        heifCpts.DeletePointerByid(id);
+}
+
+bool RecordAVStartThread(const char* dstFilePath, int sampleRate, int channelCount, int width, int height, int fps, float bitRatePercent, int crfMin, int crfMax, int presetLevel)
+{
+    std::thread createVideoCtxThread([dstFilePath, sampleRate, channelCount, width, height, fps, bitRatePercent, crfMin, crfMax, presetLevel]()
+        {
+            AVChannelLayout layout;
+            if (channelCount == 1) {
+                layout = { AV_CHANNEL_ORDER_NATIVE, (1), AV_CH_LAYOUT_MONO };
+            }
+            else if (channelCount == 2) {
+                layout = { AV_CHANNEL_ORDER_NATIVE, (2), AV_CH_LAYOUT_STEREO };
+            }
+            else {
+                av_log_error("the channel count isn`t be supported");
+                return;
+            }
+            try
+            {
+                recordMp4ThreadContext = new RecordMp4Thread(dstFilePath, sampleRate, AV_SAMPLE_FMT_FLT, layout, AV_PIX_FMT_RGBA, fps, bitRatePercent, width, height, crfMin, crfMax, presetLevel);
+            }
+            catch (const std::exception& e)
+            {
+                av_log_error("vacontext initialize failed");
+            } });
+    createVideoCtxThread.join();
+    if (recordMp4ThreadContext == nullptr)
+        return false;
+    if (recordMp4ThreadContext->GetResult() < 0)
+    {
+        delete recordMp4ThreadContext;
+        recordMp4ThreadContext = nullptr;
+        return false;
+    }
+    try
+    {
+        recordMp4ThreadContext->WriteAVPreparition();
+        av_log_info("preparation is successful");
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("preparation is failed,maybe:io exception,%s", e.what());
+        return false;
+    }
+    return true;
+}
+
+void WriteVideoFrameThread(void* dataPtr, int id)
+{
+    if (recordMp4ThreadContext == nullptr)
+    {
+        av_log_error("the vacontext is nullptr,write failed");
+        return;
+    }
+    try
+    {
+        iVideoFrameCount++;
+        // vaContext->Flip((unsigned char*)dataPtr);
+        videoFrameStart = clock();
+        recordMp4ThreadContext->WriteVideoToFile(dataPtr, id);
+        videoFrameEnd = clock();
+        float duration = float(videoFrameEnd - videoFrameStart) / CLOCKS_PER_SEC;
+        videoFrameAllTime += duration;
+        // av_log_info("write a video frame duration:%f", duration);
+        av_log_pframe("write a video frame success");
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("write a video frame failed:%s", e.what());
+    }
+}
+
+void WriteAudioFrameThread(void* dataPtr, int length)
+{
+    if (recordMp4ThreadContext == nullptr)
+    {
+        av_log_error("the vacontext is nullptr,write failed");
+        return;
+    }
+    try
+    {
+        recordMp4ThreadContext->WriteAudioToFile(dataPtr, length);
+        av_log_pframe("write a audio frame success");
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("write a audio frame failed,%s", e.what());
+    }
+}
+
+void FlushVideoBufferThread()
+{
+    if (recordMp4ThreadContext == nullptr)
+    {
+        av_log_error("the vacontext is nullptr,write failed");
+        return;
+    }
+    try
+    {
+        videoFrameStart = clock();
+        recordMp4ThreadContext->FlushEnVideoCodecBuffer();
+        videoFrameEnd = clock();
+        videoFrameAllTime += float(videoFrameEnd - videoFrameStart) / CLOCKS_PER_SEC;
+        av_log_info("flush videoCodecBuffer end");
+        av_log_info("video frame:[count:%d],[alltime:%f],[alltime avg:%f]",
+            iVideoFrameCount, videoFrameAllTime, videoFrameAllTime / iVideoFrameCount);
+        iVideoFrameCount = 0;
+        videoFrameAllTime = 0;
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("flush videoCodecBuffer failed,%s", e.what());
+    }
+}
+
+void FlushAudioBufferThread()
+{
+    if (recordMp4ThreadContext == nullptr)
+    {
+        av_log_error("the vacontext is nullptr,write failed");
+        return;
+    }
+    try
+    {
+        recordMp4ThreadContext->FlushEnAudioCodecBuffer();
+        av_log_info("flush audio encoder buffer end");
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("flush videoCodecBuffer failed,%s", e.what());
+    }
+}
+
+void RecordAVEndThread()
+{
+    if (recordMp4ThreadContext == nullptr)
+    {
+        av_log_error("the vacontext is nullptr,can`t end record");
+        return;
+    }
+    try
+    {
+        recordMp4ThreadContext->WriteAVTailer();
+        av_log_info("WriteAVTailer end");
+        
+    }
+    catch (const std::exception& e)
+    {
+        av_log_error("record end failed,%s", e.what());
+    }
+    
+}
+
+void DestroyRecordPointerThread()
+{
+    if (recordMp4ThreadContext == nullptr)return;
+    delete recordMp4ThreadContext;
+    recordMp4ThreadContext = nullptr;
     av_log_info("context delete,record end");
 }

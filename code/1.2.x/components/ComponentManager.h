@@ -1,5 +1,13 @@
 #pragma once
+#ifdef WINDOWS
+#include "../utils/IncludeFFmpeg.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "utils/IncludeFFmpeg.h"
+#endif // ANDROID
+
+
 #include <vector>
 #include <mutex>
 template <typename T>

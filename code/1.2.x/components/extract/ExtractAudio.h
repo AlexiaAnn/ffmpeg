@@ -1,9 +1,21 @@
 #pragma once
+#ifdef WINDOWS
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
+#include "../ffmpegutils/DeCodecContext.h"
+#include "../ffmpegutils/AVSwrContext.h"
+#include "../ffmpegutils/encodec/EnCodecAudioContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ffmpegutils/InFormatContext.h"
 #include "ffmpegutils/OutFormatContext.h"
 #include "ffmpegutils/DeCodecContext.h"
 #include "ffmpegutils/AVSwrContext.h"
 #include "ffmpegutils/encodec/EnCodecAudioContext.h"
+#endif // ANDROID
+
+
 class ExtractAudio
 {
 private:

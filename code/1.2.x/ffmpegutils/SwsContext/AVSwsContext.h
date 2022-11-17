@@ -1,6 +1,4 @@
 #pragma once
-#include "utils/util.h"
-#include "ffmpegutils/encodec/EnCodecVideoContext.h"
 #include "SwsContextBase.h"
 class AVSwsContext : public SwsContextBase
 {
@@ -8,6 +6,10 @@ private:
 	SwsContext *swsCont = nullptr;
 	int ret = 0;
 
+	//≤‚ ‘±‰¡ø
+	clock_t start, end;
+	float swsTime = 0;
+	int frameCount = 0;
 public:
 	AVSwsContext(AVPixelFormat dePixFormat, int deWidth, int deHeight,
 				 AVPixelFormat enPixFormat, int enWidth, int enHeight);
@@ -19,6 +21,7 @@ public:
 	bool IsNeedRescale() const;
 	bool RescaleVideoFrame(AVFrame *deVideoFrame, AVFrame *enVideoFrame) override;
 	bool RescaleVideoFrame(AVFrame *deVideoFrame, EnCodecVideoContext &codeCont) override;
+	void GetTimeInfo() const override;
 	~AVSwsContext();
 	int GetResult() const override;
 };

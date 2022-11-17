@@ -1,5 +1,11 @@
 #pragma once
+#ifdef WINDOWS
+#include "../utils/util.h"
+#endif // WINDOWS
+#ifdef ANDROID
 #include "utils/util.h"
+#endif // ANDROID
+
 #include "encodec/EnCodecAudioContext.h"
 class AVSwrContext
 {
@@ -7,6 +13,9 @@ private:
 	SwrContext *swrCont = nullptr;
 	int ret = 0;
 
+	//≤‚ ‘±‰¡ø
+	clock_t start, end;
+	int swsTime = 0;
 private:
 	void ReAllocFrame(AVFrame *&frame, int dstNbSamples);
 

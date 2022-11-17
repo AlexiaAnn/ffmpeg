@@ -1,6 +1,14 @@
 #pragma once
+#ifdef WINDOWS
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/DeCodecContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ffmpegutils/InFormatContext.h"
 #include "ffmpegutils/DeCodecContext.h"
+#endif // ANDROID
+
 class ReadFileBase
 {
 protected:

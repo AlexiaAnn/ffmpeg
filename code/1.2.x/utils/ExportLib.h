@@ -1,10 +1,28 @@
 #pragma once
+#ifdef WINDOWS
+#include "../components/read/SeekVideo.h"
+#include "../components/record/RecordGif.h"
+#include "../components/record/RecordMp4.h"
+#include "../components/record/RecordMp4Thread.h"
+#include "../components/extract/ExtractAudio.h"
+#include "../components/read/AudioWaveA.h"
+#include "../components/ComponentManager.h"
+#include "../components/read/ReadHeif.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "components/read/SeekVideo.h"
 #include "components/record/RecordGif.h"
 #include "components/record/RecordMp4.h"
-#include "components/extarct/ExtractAudio.h"
+#include "components/record/RecordMp4Thread.h"
+#include "components/extract/ExtractAudio.h"
 #include "components/read/AudioWaveA.h"
 #include "components/ComponentManager.h"
+#include "components/read/ReadHeif.h"
+#endif // ANDROID
+
+
+
 #ifdef WINDOWS
 #define Export(type) extern "C" __declspec(dllexport) type __stdcall
 #define Declspec __declspec(dllexport)
@@ -28,7 +46,9 @@
 		return;                                                                       \
 	}
 RecordMp4 *vaContext = nullptr;
+RecordMp4Thread* recordMp4ThreadContext = nullptr;
 RecordGif *recordGif = nullptr;
+ReadHeif* heifPointer = nullptr;
 
 clock_t videoFrameStart, videoFrameEnd;
 float videoFrameAllTime = 0;
@@ -47,6 +67,17 @@ Export(void) WriteVideoFrame(void *dataPtr);
 Export(void) WriteAudioFrame(void *dataPtr, int length);
 Export(void) FlushVideoBuffer();
 Export(void) RecordAVEnd();
+
+//record mp4 thread
+Export(bool) RecordAVStartThread(const char* dstFilePath, int sampleRate, int channelCount,
+	int width, int height, int fps, float bitRatePercent,
+	int crfMin, int crfMax, int presetLevel);
+Export(void) WriteVideoFrameThread(void* dataPtr,int id);
+Export(void) WriteAudioFrameThread(void* dataPtr, int length);
+Export(void) FlushVideoBufferThread();
+Export(void) FlushAudioBufferThread();
+Export(void) RecordAVEndThread();
+Export(void) DestroyRecordPointerThread();
 
 // audiowave
 ComponentManager<AudioWaveA> audioWaves;
@@ -72,3 +103,11 @@ Export(bool) RecordGifStart(const char *dstFilePath, int width, int height, int 
 Export(void) WriteGifFrame(void *dataPtr);
 Export(void) FlushGifBuffer();
 Export(void) RecordGifEnd();
+
+//read heif image
+ComponentManager<ReadHeif> heifCpts;
+Export(int) HeifStart(const char* srcPath);
+Export(int) HeifImageWidth(int id);
+Export(int) HeifImageHeight(int id);
+Export(void) HeifToRgb(void* data,int id);
+Export(void) DestroyHeifPointer(int id);

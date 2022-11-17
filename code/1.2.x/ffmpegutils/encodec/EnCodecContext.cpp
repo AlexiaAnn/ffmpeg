@@ -17,4 +17,9 @@ AVCodecContext* EnCodecContext::GetAVCodecContext() const
 
 EnCodecContext::~EnCodecContext()
 {
+	/*av_log_info("%s start",__FUNCTION__);
+	if (codecCont == nullptr) return;
+	avcodec_free_context(&codecCont);
+	codecCont = nullptr;
+	av_log_info("%s end", __FUNCTION__);*/
 }

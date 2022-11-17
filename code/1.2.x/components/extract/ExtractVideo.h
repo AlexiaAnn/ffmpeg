@@ -1,8 +1,18 @@
 #pragma once
+#ifdef WINDOWS
+#include "ExtractBase.h"
+#include "../ffmpegutils/DeCodecContext.h"
+#include "../ffmpegutils/SwsContext/AVSwsContext.h"
+#include "../ffmpegutils/encodec/EnCodecVideoContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ExtractBase.h"
 #include "ffmpegutils/DeCodecContext.h"
 #include "ffmpegutils/SwsContext/AVSwsContext.h"
 #include "ffmpegutils/encodec/EnCodecVideoContext.h"
+#endif // ANDROID
+
 class ExtractVideo : public ExtractBase
 {
 private:

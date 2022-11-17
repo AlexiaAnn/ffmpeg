@@ -1,6 +1,13 @@
 #pragma once
+#ifdef WINDOWS
+#include "../utils/util.h"
+#include "../ffmpegutils/OutFormatContext.h"
+#endif // WINDOWS
+#ifdef ANDROID
 #include "utils/util.h"
 #include "ffmpegutils/OutFormatContext.h"
+#endif // ANDROID
+
 class EnCodecContext
 {
 protected:

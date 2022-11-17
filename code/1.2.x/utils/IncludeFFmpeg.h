@@ -20,6 +20,15 @@ extern "C"
 #include <libavfilter/buffersink.h>
     // #include "cmdutils.h"
 }
+#ifdef WINDOWS
+#include <libheif/heif.h>
+#endif // WINDOWS
+#ifdef ANDROID
+#include "../include/libheif/heif.h"
+#endif // ANDROID
+
+
+#define STB_IMAGE_IMPLEMENTATION
 #include <exception>
 #include <thread>
 #include <iostream>
@@ -29,7 +38,7 @@ extern "C"
 #define av_log_error(str, ...) av_log(nullptr, AV_LOG_ERROR, str, ##__VA_ARGS__)
 #define av_log_info(str, ...) av_log(nullptr, AV_LOG_INFO, str, ##__VA_ARGS__)
 #define av_log_warning(str, ...) av_log(nullptr, AV_LOG_WARNING, str, ##__VA_ARGS__)
-#define av_log_warning(str, ...)
+#define av_log_pframe(str, ...) av_log(nullptr, AV_LOG_INFO, str, ##__VA_ARGS__)
 #endif
 #ifdef UnityLog
 #define av_log_error(str, ...) Debug::LogError(str, ##__VA_ARGS__)

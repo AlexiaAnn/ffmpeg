@@ -1,4 +1,11 @@
 #pragma once
+#ifdef WINDOWS
+
+#endif // WINDOWS
+
+#ifdef ANDROID
+
+#endif // ANDROID
 #include "utils/IncludeFFmpeg.h"
 #include <vector>
 #include <mutex>
@@ -22,9 +29,10 @@ inline ComponentManager<T>::ComponentManager()
 }
 
 template <typename T>
-inline T *ComponentManager<T>::GetPointerById(int id)
+inline T* ComponentManager<T>::GetPointerById(int id)
 {
 	magMutex.lock();
+	if (id < 0 || id >= vec.size()) return nullptr;
 	T *pointer = vec[id];
 	if (pointer == nullptr)
 		av_log_error("pointer is nullptr,it will cause some error\n");
@@ -46,6 +54,7 @@ template <typename T>
 inline bool ComponentManager<T>::DeletePointerByid(int id)
 {
 	magMutex.lock();
+	if (id < 0 || id >= vec.size()) return false;
 	T *pointer = vec[id];
 	magMutex.unlock();
 	delete pointer;

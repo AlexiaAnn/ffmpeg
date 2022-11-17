@@ -178,6 +178,8 @@ AVFrame* EnCodecAudioContext::GetEncodecFrame() const
 
 EnCodecAudioContext::~EnCodecAudioContext()
 {
+    av_log_info("%s start", __FUNCTION__);
     av_frame_free(&frame);
     av_packet_free(&packet);
+    av_log_info("%s end", __FUNCTION__);
 }

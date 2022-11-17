@@ -1,4 +1,10 @@
 #pragma once
+#ifdef WINDOWS
+
+#endif // WINDOWS
+#ifdef ANDROID
+
+#endif // ANDROID
 #include "Video/Libx264EncodecConfig.h"
 #include "Video/EnMediaCodecConfig.h"
 #include "Audio/Libmp3lameEncoderConfig.h"

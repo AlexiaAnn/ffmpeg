@@ -46,8 +46,12 @@ bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, AVFrame* enVideoFram
 		av_log_warning("swscontext is nullptr,cant rescale video frame\n");
 		return false;
 	}
+	start = clock();
 	ret = sws_scale(swsCont, deVideoFrame->data, deVideoFrame->linesize, 0,
 				    deVideoFrame->height, enVideoFrame->data, enVideoFrame->linesize);
+	end = clock();
+	swsTime += float(end - start) / CLOCKS_PER_SEC;
+	frameCount += 1;
 	if (ret <= 0) {
 		char errorStr[AV_ERROR_MAX_STRING_SIZE];
 		av_make_error_string(errorStr, AV_ERROR_MAX_STRING_SIZE,ret);
@@ -68,8 +72,12 @@ bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, EnCodecVideoContext&
 		av_log_warning("enframe is nullptr,cant to rescale\n");
 		return false;
 	}
+	start = clock();
 	ret = sws_scale(swsCont, deVideoFrame->data, deVideoFrame->linesize, 0,
 		deVideoFrame->height, enVideoFrame->data, enVideoFrame->linesize);
+	end = clock();
+	swsTime += float(end - start) / CLOCKS_PER_SEC;
+	frameCount += 1;
 	if (ret <= 0) {
 		char errorStr[AV_ERROR_MAX_STRING_SIZE];
 		av_make_error_string(errorStr, AV_ERROR_MAX_STRING_SIZE, ret);
@@ -77,6 +85,11 @@ bool AVSwsContext::RescaleVideoFrame(AVFrame* deVideoFrame, EnCodecVideoContext&
 		return false;
 	}
 	return true;
+}
+
+void AVSwsContext::GetTimeInfo() const
+{
+	av_log_info("test time=>[sws time:%fs,avg:%fs]",swsTime,swsTime/frameCount);
 }
 
 AVSwsContext::~AVSwsContext()

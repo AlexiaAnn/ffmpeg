@@ -148,6 +148,8 @@ int AVSwrContext::GetResult() const
 
 AVSwrContext::~AVSwrContext()
 {
+	av_log_info("%s start",__FUNCTION__);
 	swr_free(&swrCont);
 	swrCont = nullptr;
+	av_log_info("%s end", __FUNCTION__);
 }

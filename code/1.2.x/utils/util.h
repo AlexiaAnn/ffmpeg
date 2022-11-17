@@ -14,4 +14,5 @@ AVFilterInOut* AllocAVFilterInOut();
 AVFilterGraph* AllocAVFilterGraph();
 AVFrame* CreateVideoFrame(AVPixelFormat format, int width, int height);
 void FlipImage(unsigned char* src,int width,int height);
+void FlipImage(uint8_t* data,int width,int height,int channel);
 AVPixelFormat GetPixFormatByCodecId(AVCodecID codecId);

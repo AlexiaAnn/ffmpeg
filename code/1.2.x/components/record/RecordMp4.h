@@ -1,4 +1,15 @@
 #pragma once
+#ifdef WINDOWS
+#include "../ffmpegutils/SwsContext/AVSwsContext.h"
+#include "../ffmpegutils/AVSwrContext.h"
+#include "../ffmpegutils/encodec/EnCodecAudioContext.h"
+#include "../ffmpegutils/encodec/EnCodecVideoContext.h"
+#include "../ffmpegutils/OutFormatContext.h"
+#include "../ffmpegutils/SwsContext/SwsContextBase.h"
+#include "../ffmpegutils/SwsContext/LibyuvSwsContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ffmpegutils/SwsContext/AVSwsContext.h"
 #include "ffmpegutils/AVSwrContext.h"
 #include "ffmpegutils/encodec/EnCodecAudioContext.h"
@@ -6,6 +17,8 @@
 #include "ffmpegutils/OutFormatContext.h"
 #include "ffmpegutils/SwsContext/SwsContextBase.h"
 #include "ffmpegutils/SwsContext/LibyuvSwsContext.h"
+#endif // ANDROID
+
 #include <mutex>
 #define DEFAULTAUDIOCODECID AV_CODEC_ID_MP3
 #define DEFAULTVIDEOCODECID AV_CODEC_ID_H264

@@ -1,5 +1,11 @@
 #pragma once
+#ifdef WINDOWS
+#include "../utils/util.h"
+#endif // WINDOWS
+#ifdef ANDROID
 #include "utils/util.h"
+#endif // ANDROID
+
 #define DEFAULTGIFINPUTPIXFMT AV_PIX_FMT_RGB565
 #define DEFAULTGIFPIXFMT AV_PIX_FMT_PAL8
 class FilterContext

@@ -17,19 +17,8 @@ RecordMp4::RecordMp4(const char *dstFilepath,
 	enVideoCont = new EnCodecVideoContext(EncodeName::LIBX264, width, height, fps, bitRatePercent, crfMin, crfMax, presetLevel);
 #endif
 #ifdef ANDROID
-	static bool isHardcode = true;
-	if (isHardcode)
-	{
-		av_log_info("encode video code:hard");
-		enVideoCont = new EnCodecVideoContext(EncodeName::H264HLMEDIACODEC, width, height, fps, bitRatePercent, crfMin, crfMax, presetLevel);
-		isHardcode = false;
-	}
-	else
-	{
-		av_log_info("encode video code:soft");
-		enVideoCont = new EnCodecVideoContext(EncodeName::LIBX264, width, height, fps, bitRatePercent, crfMin, crfMax, presetLevel);
-		isHardcode = true;
-	}
+	av_log_info("encode video code:hard");
+	enVideoCont = new EnCodecVideoContext(EncodeName::H264HLMEDIACODEC, width, height, fps, bitRatePercent, crfMin, crfMax, presetLevel);
 #endif
 	if (enVideoCont->GetResult() < 0)
 		goto end;

@@ -1,7 +1,16 @@
 #pragma once
+#ifdef WINDOWS
+#include "../ffmpegutils/InFormatContext.h"
+#include "../ffmpegutils/DeCodecContext.h"
+#include "../ffmpegutils/SwsContext/AVSwsContext.h"
+#endif // WINDOWS
+
+#ifdef ANDROID
 #include "ffmpegutils/InFormatContext.h"
 #include "ffmpegutils/DeCodecContext.h"
 #include "ffmpegutils/SwsContext/AVSwsContext.h"
+#endif // ANDROID
+
 class SeekVideo
 {
 private:
