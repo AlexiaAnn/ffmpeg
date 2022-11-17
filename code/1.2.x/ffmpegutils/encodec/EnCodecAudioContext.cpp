@@ -77,7 +77,7 @@ AVCodecContext* EnCodecAudioContext::OpenEncodecContext(AVCodecID encodecid)
         break;
     case AV_CODEC_ID_AAC:
         codecContext->bit_rate = 137000;
-        codecContext->sample_rate = 44100; // error prone
+        codecContext->sample_rate = 48000; // error prone
         layout = { AV_CHANNEL_ORDER_NATIVE, (2), {AV_CH_LAYOUT_STEREO} };
         av_channel_layout_copy(&codecContext->ch_layout, &layout);
         break;
@@ -128,10 +128,12 @@ EnCodecAudioContext::EnCodecAudioContext() :EnCodecContext(),maxNbSamples(0)
 EnCodecAudioContext::EnCodecAudioContext(AVCodecID codecId):maxNbSamples(0)
 {
 #ifdef WINDOWS
-    codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3MF);
+    /*codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3MF);*/
+    codecCont = OpenEncodecContext(codecId);
 #endif // WINDOWS
 #ifdef ANDROID
-    codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3LAME);
+    //codecCont = CodecConfigManager::GetAudioEncoder(AudioEncodeName::LIBMP3LAME);
+    codecCont = OpenEncodecContext(codecId);
 #endif // ANDROID
 
 

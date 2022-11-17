@@ -7,7 +7,7 @@ RecordMp4Thread::RecordMp4Thread(const char* dstFilepath,
 	enAudioCont(nullptr), swrCont(nullptr), enVideoCont(nullptr),
 	swsCont(nullptr), deAudioFrame(nullptr)
 {
-	enAudioCont = new EnCodecAudioContext(DEFAULTAUDIOCODECID);
+	enAudioCont = new EnCodecAudioContext(AV_CODEC_ID_AAC);
 	if (enAudioCont->GetResult() < 0)
 		goto end;
 	swrCont = new AVSwrContext(sampleRate, sampleFmt, chLayout, enAudioCont->GetAVCodecContext());
@@ -67,10 +67,10 @@ bool RecordMp4Thread::WriteVideoToFile(void* data, int id)
 	AVCodecContext* context = enVideoCont->GetAVCodecContext();
 
 	AVFrame* frame = av_frame_alloc();
-	frame->linesize[0] = -(context->width * 4);
+	frame->linesize[0] = context->width * 4;
 	frame->width = context->width;
 	frame->height = context->height;
-	frame->data[0] = (uint8_t*)data+context->width*(context->height-1)*4;
+	frame->data[0] = (uint8_t*)data;
 
 	AVFrame* enVideoFrame = CreateVideoFrame(context->pix_fmt, context->width, context->height);
 	if (enVideoFrame == nullptr) {
